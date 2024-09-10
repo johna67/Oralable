@@ -1,0 +1,593 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		44A79D632C90499E00BD84DD /* OralableApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D622C90499E00BD84DD /* OralableApp.swift */; };
+		44A79D652C90499E00BD84DD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D642C90499E00BD84DD /* ContentView.swift */; };
+		44A79D672C9049A000BD84DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 44A79D662C9049A000BD84DD /* Assets.xcassets */; };
+		44A79D6A2C9049A000BD84DD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 44A79D692C9049A000BD84DD /* Preview Assets.xcassets */; };
+		44A79D742C9049A000BD84DD /* OralableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D732C9049A000BD84DD /* OralableTests.swift */; };
+		44A79D7E2C9049A000BD84DD /* OralableUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D7D2C9049A000BD84DD /* OralableUITests.swift */; };
+		44A79D802C9049A000BD84DD /* OralableUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D7F2C9049A000BD84DD /* OralableUITestsLaunchTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		44A79D702C9049A000BD84DD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 44A79D572C90499E00BD84DD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 44A79D5E2C90499E00BD84DD;
+			remoteInfo = Oralable;
+		};
+		44A79D7A2C9049A000BD84DD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 44A79D572C90499E00BD84DD /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 44A79D5E2C90499E00BD84DD;
+			remoteInfo = Oralable;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		44A79D5F2C90499E00BD84DD /* Oralable.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oralable.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		44A79D622C90499E00BD84DD /* OralableApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableApp.swift; sourceTree = "<group>"; };
+		44A79D642C90499E00BD84DD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		44A79D662C9049A000BD84DD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		44A79D692C9049A000BD84DD /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
+		44A79D6F2C9049A000BD84DD /* OralableTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OralableTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		44A79D732C9049A000BD84DD /* OralableTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableTests.swift; sourceTree = "<group>"; };
+		44A79D792C9049A000BD84DD /* OralableUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OralableUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		44A79D7D2C9049A000BD84DD /* OralableUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableUITests.swift; sourceTree = "<group>"; };
+		44A79D7F2C9049A000BD84DD /* OralableUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableUITestsLaunchTests.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		44A79D5C2C90499E00BD84DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44A79D6C2C9049A000BD84DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44A79D762C9049A000BD84DD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		44A79D562C90499E00BD84DD = {
+			isa = PBXGroup;
+			children = (
+				44A79D612C90499E00BD84DD /* Oralable */,
+				44A79D722C9049A000BD84DD /* OralableTests */,
+				44A79D7C2C9049A000BD84DD /* OralableUITests */,
+				44A79D602C90499E00BD84DD /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		44A79D602C90499E00BD84DD /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				44A79D5F2C90499E00BD84DD /* Oralable.app */,
+				44A79D6F2C9049A000BD84DD /* OralableTests.xctest */,
+				44A79D792C9049A000BD84DD /* OralableUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		44A79D612C90499E00BD84DD /* Oralable */ = {
+			isa = PBXGroup;
+			children = (
+				44A79D622C90499E00BD84DD /* OralableApp.swift */,
+				44A79D642C90499E00BD84DD /* ContentView.swift */,
+				44A79D662C9049A000BD84DD /* Assets.xcassets */,
+				44A79D682C9049A000BD84DD /* Preview Content */,
+			);
+			path = Oralable;
+			sourceTree = "<group>";
+		};
+		44A79D682C9049A000BD84DD /* Preview Content */ = {
+			isa = PBXGroup;
+			children = (
+				44A79D692C9049A000BD84DD /* Preview Assets.xcassets */,
+			);
+			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		44A79D722C9049A000BD84DD /* OralableTests */ = {
+			isa = PBXGroup;
+			children = (
+				44A79D732C9049A000BD84DD /* OralableTests.swift */,
+			);
+			path = OralableTests;
+			sourceTree = "<group>";
+		};
+		44A79D7C2C9049A000BD84DD /* OralableUITests */ = {
+			isa = PBXGroup;
+			children = (
+				44A79D7D2C9049A000BD84DD /* OralableUITests.swift */,
+				44A79D7F2C9049A000BD84DD /* OralableUITestsLaunchTests.swift */,
+			);
+			path = OralableUITests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		44A79D5E2C90499E00BD84DD /* Oralable */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 44A79D832C9049A000BD84DD /* Build configuration list for PBXNativeTarget "Oralable" */;
+			buildPhases = (
+				44A79D5B2C90499E00BD84DD /* Sources */,
+				44A79D5C2C90499E00BD84DD /* Frameworks */,
+				44A79D5D2C90499E00BD84DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Oralable;
+			productName = Oralable;
+			productReference = 44A79D5F2C90499E00BD84DD /* Oralable.app */;
+			productType = "com.apple.product-type.application";
+		};
+		44A79D6E2C9049A000BD84DD /* OralableTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 44A79D862C9049A000BD84DD /* Build configuration list for PBXNativeTarget "OralableTests" */;
+			buildPhases = (
+				44A79D6B2C9049A000BD84DD /* Sources */,
+				44A79D6C2C9049A000BD84DD /* Frameworks */,
+				44A79D6D2C9049A000BD84DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				44A79D712C9049A000BD84DD /* PBXTargetDependency */,
+			);
+			name = OralableTests;
+			productName = OralableTests;
+			productReference = 44A79D6F2C9049A000BD84DD /* OralableTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		44A79D782C9049A000BD84DD /* OralableUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 44A79D892C9049A000BD84DD /* Build configuration list for PBXNativeTarget "OralableUITests" */;
+			buildPhases = (
+				44A79D752C9049A000BD84DD /* Sources */,
+				44A79D762C9049A000BD84DD /* Frameworks */,
+				44A79D772C9049A000BD84DD /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				44A79D7B2C9049A000BD84DD /* PBXTargetDependency */,
+			);
+			name = OralableUITests;
+			productName = OralableUITests;
+			productReference = 44A79D792C9049A000BD84DD /* OralableUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		44A79D572C90499E00BD84DD /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1540;
+				LastUpgradeCheck = 1540;
+				TargetAttributes = {
+					44A79D5E2C90499E00BD84DD = {
+						CreatedOnToolsVersion = 15.4;
+					};
+					44A79D6E2C9049A000BD84DD = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = 44A79D5E2C90499E00BD84DD;
+					};
+					44A79D782C9049A000BD84DD = {
+						CreatedOnToolsVersion = 15.4;
+						TestTargetID = 44A79D5E2C90499E00BD84DD;
+					};
+				};
+			};
+			buildConfigurationList = 44A79D5A2C90499E00BD84DD /* Build configuration list for PBXProject "Oralable" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 44A79D562C90499E00BD84DD;
+			productRefGroup = 44A79D602C90499E00BD84DD /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				44A79D5E2C90499E00BD84DD /* Oralable */,
+				44A79D6E2C9049A000BD84DD /* OralableTests */,
+				44A79D782C9049A000BD84DD /* OralableUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		44A79D5D2C90499E00BD84DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44A79D6A2C9049A000BD84DD /* Preview Assets.xcassets in Resources */,
+				44A79D672C9049A000BD84DD /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44A79D6D2C9049A000BD84DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44A79D772C9049A000BD84DD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		44A79D5B2C90499E00BD84DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44A79D652C90499E00BD84DD /* ContentView.swift in Sources */,
+				44A79D632C90499E00BD84DD /* OralableApp.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44A79D6B2C9049A000BD84DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44A79D742C9049A000BD84DD /* OralableTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		44A79D752C9049A000BD84DD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44A79D802C9049A000BD84DD /* OralableUITestsLaunchTests.swift in Sources */,
+				44A79D7E2C9049A000BD84DD /* OralableUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		44A79D712C9049A000BD84DD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 44A79D5E2C90499E00BD84DD /* Oralable */;
+			targetProxy = 44A79D702C9049A000BD84DD /* PBXContainerItemProxy */;
+		};
+		44A79D7B2C9049A000BD84DD /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 44A79D5E2C90499E00BD84DD /* Oralable */;
+			targetProxy = 44A79D7A2C9049A000BD84DD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		44A79D812C9049A000BD84DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		44A79D822C9049A000BD84DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		44A79D842C9049A000BD84DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Oralable/Preview Content\"";
+				DEVELOPMENT_TEAM = THKF822TTP;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tbm.oralable.com.Oralable;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		44A79D852C9049A000BD84DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"Oralable/Preview Content\"";
+				DEVELOPMENT_TEAM = THKF822TTP;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tbm.oralable.com.Oralable;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		44A79D872C9049A000BD84DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = THKF822TTP;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tbm.oralable.com.OralableTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Oralable.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Oralable";
+			};
+			name = Debug;
+		};
+		44A79D882C9049A000BD84DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = THKF822TTP;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.5;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tbm.oralable.com.OralableTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Oralable.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/Oralable";
+			};
+			name = Release;
+		};
+		44A79D8A2C9049A000BD84DD /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = THKF822TTP;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tbm.oralable.com.OralableUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Oralable;
+			};
+			name = Debug;
+		};
+		44A79D8B2C9049A000BD84DD /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = THKF822TTP;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = tbm.oralable.com.OralableUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Oralable;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		44A79D5A2C90499E00BD84DD /* Build configuration list for PBXProject "Oralable" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44A79D812C9049A000BD84DD /* Debug */,
+				44A79D822C9049A000BD84DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		44A79D832C9049A000BD84DD /* Build configuration list for PBXNativeTarget "Oralable" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44A79D842C9049A000BD84DD /* Debug */,
+				44A79D852C9049A000BD84DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		44A79D862C9049A000BD84DD /* Build configuration list for PBXNativeTarget "OralableTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44A79D872C9049A000BD84DD /* Debug */,
+				44A79D882C9049A000BD84DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		44A79D892C9049A000BD84DD /* Build configuration list for PBXNativeTarget "OralableUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				44A79D8A2C9049A000BD84DD /* Debug */,
+				44A79D8B2C9049A000BD84DD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 44A79D572C90499E00BD84DD /* Project object */;
+}
