@@ -14,6 +14,12 @@
 		44A79D742C9049A000BD84DD /* OralableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D732C9049A000BD84DD /* OralableTests.swift */; };
 		44A79D7E2C9049A000BD84DD /* OralableUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D7D2C9049A000BD84DD /* OralableUITests.swift */; };
 		44A79D802C9049A000BD84DD /* OralableUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D7F2C9049A000BD84DD /* OralableUITestsLaunchTests.swift */; };
+		AFBD414F2D1023A900E0C962 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBD414E2D1023A900E0C962 /* MainView.swift */; };
+		AFEC199F2D102A0100404D42 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC199E2D102A0100404D42 /* SplashView.swift */; };
+		AFEC19A12D102A1200404D42 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A02D102A1200404D42 /* LoginView.swift */; };
+		AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A22D102D3C00404D42 /* HomeView.swift */; };
+		AFEC19A52D102D6000404D42 /* ShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A42D102D6000404D42 /* ShareView.swift */; };
+		AFEC19A72D102F8400404D42 /* Fonts.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A62D102F8400404D42 /* Fonts.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +50,12 @@
 		44A79D792C9049A000BD84DD /* OralableUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OralableUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		44A79D7D2C9049A000BD84DD /* OralableUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableUITests.swift; sourceTree = "<group>"; };
 		44A79D7F2C9049A000BD84DD /* OralableUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		AFBD414E2D1023A900E0C962 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
+		AFEC199E2D102A0100404D42 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
+		AFEC19A02D102A1200404D42 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		AFEC19A22D102D3C00404D42 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
+		AFEC19A42D102D6000404D42 /* ShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareView.swift; sourceTree = "<group>"; };
+		AFEC19A62D102F8400404D42 /* Fonts.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Fonts.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,8 +108,14 @@
 			children = (
 				44A79D622C90499E00BD84DD /* OralableApp.swift */,
 				44A79D642C90499E00BD84DD /* ContentView.swift */,
+				AFBD414E2D1023A900E0C962 /* MainView.swift */,
 				44A79D662C9049A000BD84DD /* Assets.xcassets */,
 				44A79D682C9049A000BD84DD /* Preview Content */,
+				AFEC199E2D102A0100404D42 /* SplashView.swift */,
+				AFEC19A02D102A1200404D42 /* LoginView.swift */,
+				AFEC19A22D102D3C00404D42 /* HomeView.swift */,
+				AFEC19A42D102D6000404D42 /* ShareView.swift */,
+				AFEC19A62D102F8400404D42 /* Fonts.swift */,
 			);
 			path = Oralable;
 			sourceTree = "<group>";
@@ -257,7 +275,13 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AFEC19A72D102F8400404D42 /* Fonts.swift in Sources */,
 				44A79D652C90499E00BD84DD /* ContentView.swift in Sources */,
+				AFEC199F2D102A0100404D42 /* SplashView.swift in Sources */,
+				AFBD414F2D1023A900E0C962 /* MainView.swift in Sources */,
+				AFEC19A52D102D6000404D42 /* ShareView.swift in Sources */,
+				AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */,
+				AFEC19A12D102A1200404D42 /* LoginView.swift in Sources */,
 				44A79D632C90499E00BD84DD /* OralableApp.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

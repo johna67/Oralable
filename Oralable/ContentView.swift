@@ -8,14 +8,25 @@
 import SwiftUI
 
 struct ContentView: View {
+    enum Scene {
+        case splash, login, onboarding, main
+    }
+
+    @State private var scene = Scene.splash
+
     var body: some View {
-        VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+        Group {
+            switch scene {
+            case .login:
+                LoginView()
+            case .splash:
+                SplashView()
+            case .onboarding:
+                EmptyView()
+            case .main:
+                MainView()
+            }
         }
-        .padding()
     }
 }
 
