@@ -5,32 +5,49 @@
 
 import SwiftUI
 
+enum TextStyle {
+    case body(Color? = nil)
+    case headline(Color? = nil)
+    case subtitle(Color? = nil)
+    case icon(Color? = nil)
+    case iconLarge(Color? = nil)
+}
+
+struct TextStyleModifier: ViewModifier {
+    let style: TextStyle
+    
+    func body(content: Content) -> some View {
+        let defaultColor = Color("Foreground")
+        switch style {
+        case .body(let color):
+            content
+                .font(.body)
+                .foregroundColor(color ?? defaultColor)
+        case .headline(let color):
+            content
+                .font(.system(size: 36))
+                .bold()
+                .foregroundColor(color ?? defaultColor)
+        case .subtitle(let color):
+            content
+                .font(.system(size: 20))
+                .bold()
+                .foregroundColor(color ?? defaultColor)
+        case .icon(let color):
+            content
+                .font(.system(size: 16))
+                .foregroundColor(color ?? defaultColor)
+        case .iconLarge(let color):
+            content
+                .font(.system(size: 16))
+                .foregroundColor(color ?? defaultColor)
+        }
+        
+    }
+}
+
 extension View {
-    func headline(_ color: Color = Color("Primary")) -> some View {
-        font(.system(size: 36))
-            .bold()
-            .foregroundColor(color)
-    }
-    
-    func subtitle(_ color: Color = Color("Primary")) -> some View {
-        font(.system(size: 20))
-            .bold()
-            .foregroundColor(color)
-    }
-    
-    func body(_ color: Color = Color("Primary")) -> some View {
-        font(.system(size: 16))
-            .foregroundColor(color)
-    }
-    
-    func icon(_ color: Color = Color("Primary")) -> some View {
-        font(.system(size: 16))
-            .foregroundColor(color)
-    }
-    
-    func iconLarge(_ color: Color = Color("Primary")) -> some View {
-        font(.system(size: 24))
-            .foregroundColor(color)
-            .bold()
+    func textStyle(_ style: TextStyle) -> some View {
+        self.modifier(TextStyleModifier(style: style))
     }
 }

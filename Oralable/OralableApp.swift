@@ -11,7 +11,8 @@ import SwiftUI
 struct OralableApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            //ContentView()
+            HomeView()
         }
     }
 }

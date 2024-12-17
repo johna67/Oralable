@@ -1,0 +1,15 @@
+disabled_rules:
+  - line_length
+  - identifier_name
+  - todo
+  - trailing_whitespace
+  - comment_spacing
+  - large_tuple
+  - trailing_comma
+  - function_parameter_count
+  - file_length
+#  - opening_brace
+#  - blanket_disable_command
+excluded:
+  - yoganidra/Generated
+  - yoganidra/PopulateDatabase.swift

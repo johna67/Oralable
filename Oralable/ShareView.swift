@@ -11,7 +11,7 @@ struct ShareView: View {
             
         } label: {
             Text("Share measurements")
-                .body(.background)
+                .textStyle(.body(.background))
                 .padding()
         }
         .background(.primary)

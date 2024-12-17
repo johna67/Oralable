@@ -13,7 +13,7 @@ struct HomeView: View {
                     
                 } label: {
                     Image(systemName: "gearshape")
-                        .iconLarge(.accent)
+                        .textStyle(.iconLarge(.accent))
                 }
                 .padding(.trailing)
                 Spacer()
@@ -21,18 +21,18 @@ struct HomeView: View {
                     
                 } label: {
                     Image(systemName: "wave.3.right.circle")
-                        .iconLarge(.accent)
+                        .textStyle(.iconLarge(.accent))
                 }
                 .padding(.leading)
             }
             .padding(.bottom)
             Text("Hi, John A")
-                .headline()
+                .textStyle(.headline())
                 .padding(.bottom)
             Text("Latest Measurements")
-                .subtitle()
+                .textStyle(.subtitle())
                 .padding(.bottom)
-            ScrollView() {
+            ScrollView {
                 VStack(spacing: 20) {
                     MeasurementView(icon: "heart.fill", title: "Heart Rate", measurement: "86", unit: "bpm", classification: "Normal")
                     MeasurementView(icon: "distribute.vertical.fill", title: "Muscle Activity", measurement: "9", unit: "%", classification: "Normal")
@@ -56,19 +56,19 @@ struct MeasurementView: View {
         VStack(alignment: .leading) {
             HStack {
                 Image(systemName: icon)
-                    .icon(.accent)
+                    .textStyle(.icon(.accent))
                 Text(title)
-                    .subtitle(.primary)
+                    .textStyle(.subtitle())
                 Spacer()
                 Image(systemName: "arrow.right")
-                    .body(.primary)
+                    .textStyle(.icon())
             }
             HStack {
                 HStack(alignment: .lastTextBaseline) {
                     Text(measurement)
-                        .headline()
+                        .textStyle(.headline())
                     Text(unit)
-                        .subtitle()
+                        .textStyle(.subtitle())
                         .padding(.trailing, 20)
                 }
                 Spacer()
@@ -78,9 +78,9 @@ struct MeasurementView: View {
             }
             HStack {
                 Image(systemName: "checkmark.circle.fill")
-                    .icon(.approve)
+                    .textStyle(.icon(.approve))
                 Text(classification)
-                    .body()
+                    .textStyle(.body())
             }
         }
         .padding()
