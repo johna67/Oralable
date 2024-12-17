@@ -39,7 +39,7 @@ struct TextStyleModifier: ViewModifier {
                 .foregroundColor(color ?? defaultColor)
         case .iconLarge(let color):
             content
-                .font(.system(size: 16))
+                .font(.system(size: 24))
                 .foregroundColor(color ?? defaultColor)
         }
         
