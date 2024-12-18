@@ -30,6 +30,9 @@
 		AFEC19C22D11847700404D42 /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19C12D11847700404D42 /* DeviceView.swift */; };
 		AFEC19C52D11882200404D42 /* MeasurementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19C42D11882200404D42 /* MeasurementView.swift */; };
 		AFEC19C72D118D6E00404D42 /* Nonce.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19C62D118D6E00404D42 /* Nonce.swift */; };
+		AFEC19C92D12B12700404D42 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19C82D12B12700404D42 /* ChartView.swift */; };
+		AFEC19CD2D12BF8E00404D42 /* MeasurementService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19CC2D12BF8E00404D42 /* MeasurementService.swift */; };
+		AFEC19D32D12C12F00404D42 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19D22D12C12F00404D42 /* Models.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -76,6 +79,9 @@
 		AFEC19C12D11847700404D42 /* DeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
 		AFEC19C42D11882200404D42 /* MeasurementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementView.swift; sourceTree = "<group>"; };
 		AFEC19C62D118D6E00404D42 /* Nonce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Nonce.swift; sourceTree = "<group>"; };
+		AFEC19C82D12B12700404D42 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
+		AFEC19CC2D12BF8E00404D42 /* MeasurementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementService.swift; sourceTree = "<group>"; };
+		AFEC19D22D12C12F00404D42 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -126,25 +132,16 @@
 		44A79D612C90499E00BD84DD /* Oralable */ = {
 			isa = PBXGroup;
 			children = (
-				AFEC19C32D11881200404D42 /* Components */,
-				AFEC19B82D116F0100404D42 /* ActivityView */,
+				AFEC19CB2D12BF3500404D42 /* Views */,
+				AFEC19CA2D12BE7000404D42 /* Services */,
 				44A79D622C90499E00BD84DD /* OralableApp.swift */,
-				44A79D642C90499E00BD84DD /* ContentView.swift */,
-				AFBD414E2D1023A900E0C962 /* MainView.swift */,
 				44A79D662C9049A000BD84DD /* Assets.xcassets */,
 				44A79D682C9049A000BD84DD /* Preview Content */,
-				AFEC199E2D102A0100404D42 /* SplashView.swift */,
-				AFEC19A02D102A1200404D42 /* LoginView.swift */,
-				AFEC19A22D102D3C00404D42 /* HomeView.swift */,
-				AFEC19A42D102D6000404D42 /* ShareView.swift */,
 				AFEC19A62D102F8400404D42 /* TextStyle.swift */,
-				AFEC19B22D116DD000404D42 /* MoreView.swift */,
-				AFEC19B42D116E9C00404D42 /* AboutView.swift */,
 				AFEC19BB2D116F1C00404D42 /* AppMetadata.swift */,
 				AFEC19BD2D116FC800404D42 /* Extensions.swift */,
-				AFEC19BF2D1170BA00404D42 /* WebView.swift */,
-				AFEC19C12D11847700404D42 /* DeviceView.swift */,
 				AFEC19C62D118D6E00404D42 /* Nonce.swift */,
+				AFEC19D22D12C12F00404D42 /* Models.swift */,
 			);
 			path = Oralable;
 			sourceTree = "<group>";
@@ -189,6 +186,34 @@
 				AFEC19C42D11882200404D42 /* MeasurementView.swift */,
 			);
 			path = Components;
+			sourceTree = "<group>";
+		};
+		AFEC19CA2D12BE7000404D42 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				AFEC19CC2D12BF8E00404D42 /* MeasurementService.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		AFEC19CB2D12BF3500404D42 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				AFEC19C32D11881200404D42 /* Components */,
+				AFEC19B82D116F0100404D42 /* ActivityView */,
+				44A79D642C90499E00BD84DD /* ContentView.swift */,
+				AFBD414E2D1023A900E0C962 /* MainView.swift */,
+				AFEC199E2D102A0100404D42 /* SplashView.swift */,
+				AFEC19A02D102A1200404D42 /* LoginView.swift */,
+				AFEC19A22D102D3C00404D42 /* HomeView.swift */,
+				AFEC19A42D102D6000404D42 /* ShareView.swift */,
+				AFEC19B22D116DD000404D42 /* MoreView.swift */,
+				AFEC19B42D116E9C00404D42 /* AboutView.swift */,
+				AFEC19BF2D1170BA00404D42 /* WebView.swift */,
+				AFEC19C12D11847700404D42 /* DeviceView.swift */,
+				AFEC19C82D12B12700404D42 /* ChartView.swift */,
+			);
+			path = Views;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -357,14 +382,17 @@
 				AFEC19C02D1170BA00404D42 /* WebView.swift in Sources */,
 				AFEC19B52D116E9C00404D42 /* AboutView.swift in Sources */,
 				AFEC19BC2D116F1C00404D42 /* AppMetadata.swift in Sources */,
+				AFEC19C92D12B12700404D42 /* ChartView.swift in Sources */,
 				AFBD414F2D1023A900E0C962 /* MainView.swift in Sources */,
 				AFEC19A52D102D6000404D42 /* ShareView.swift in Sources */,
 				AFEC19C52D11882200404D42 /* MeasurementView.swift in Sources */,
+				AFEC19CD2D12BF8E00404D42 /* MeasurementService.swift in Sources */,
 				AFEC19C72D118D6E00404D42 /* Nonce.swift in Sources */,
 				AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */,
 				AFEC19A12D102A1200404D42 /* LoginView.swift in Sources */,
 				44A79D632C90499E00BD84DD /* OralableApp.swift in Sources */,
 				AFEC19BE2D116FC800404D42 /* Extensions.swift in Sources */,
+				AFEC19D32D12C12F00404D42 /* Models.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -548,7 +576,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = tbm.oralable.com.Oralable;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
@@ -577,7 +605,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = tbm.oralable.com.Oralable;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_VERSION = 5.0;
+				SWIFT_VERSION = 6.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;

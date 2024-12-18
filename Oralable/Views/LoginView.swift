@@ -32,7 +32,7 @@ struct LoginView: View {
             case let .success(authResults):
                 if let credential = authResults.credential as? ASAuthorizationAppleIDCredential {
                     Task {
-                        
+                        print(credential)
                         signingIn = false
                     }
                 }

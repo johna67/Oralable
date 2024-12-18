@@ -1,3 +1,8 @@
+//
+// Created by Gabor Detari gabor@detari.dev
+// Copyright 2024 Gabor Detari. All rights reserved.
+//
+
 import SwiftUI
 import WebKit
 

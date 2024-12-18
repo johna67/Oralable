@@ -13,6 +13,7 @@ struct OralableApp: App {
         WindowGroup {
             //ContentView()
             HomeView()
+                .environment(MeasurementService())
         }
     }
 }
