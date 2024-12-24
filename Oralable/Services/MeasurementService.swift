@@ -6,7 +6,7 @@
 import Foundation
 
 @Observable class MeasurementService {
-    var measurements = [MeasurementSeries]()
+    var data = [MeasurementSeries]()
     
     init() {
             let calendar = Calendar.current
@@ -24,6 +24,6 @@ import Foundation
                 measurements: measurementArray
             )
             
-            self.measurements = [series]
+            self.data = [series]
         }
 }

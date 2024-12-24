@@ -48,12 +48,12 @@ struct DeviceView: View {
                 HStack {
                     Spacer()
                     Text("Add a device")
-                        .textStyle(.body())
+                        .textStyle(.body(.background))
                     Spacer()
                 }
             }
             .padding()
-            .background(.approve)
+            .background(Color.foreground)
             .cornerRadius(6)
             .padding()
         }
