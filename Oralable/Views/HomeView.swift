@@ -44,19 +44,19 @@ struct HomeView: View {
                     .padding(.bottom)
                 ScrollView {
                     VStack(spacing: 20) {
-                        NavigationLink(value: MeasurementType.heartRate) {
-                            MeasurementView(icon: "heart.fill", title: "Heart Rate", measurement: "86", unit: "bpm", classification: "Normal")
+                        NavigationLink(value: Measurements.Category.heartRate) {
+                            MeasurementView(measurementCategory: Measurements.Category.heartRate)
                         }
-                        NavigationLink(value: MeasurementType.muscleActivity) {
-                            MeasurementView(icon: "distribute.vertical.fill", title: "Muscle Activity", measurement: "9", unit: "%", classification: "Normal")
+                        NavigationLink(value: Measurements.Category.muscleActivity) {
+                            MeasurementView(measurementCategory: Measurements.Category.muscleActivity)
                         }
-                        NavigationLink(value: MeasurementType.temperature) {
-                            MeasurementView(icon: "medical.thermometer.fill", title: "Body Temperature", measurement: "36.7", unit: "°C", classification: "Normal")
+                        NavigationLink(value: Measurements.Category.temperature) {
+                            MeasurementView(measurementCategory: Measurements.Category.temperature)
                         }
                     }
                 }
-                .navigationDestination(for: MeasurementType.self) { _ in
-                    ChartView()
+                .navigationDestination(for: Measurements.Category.self) { category in
+                    ChartView(measurementCategory: category)
                 }
                 Spacer()
             }

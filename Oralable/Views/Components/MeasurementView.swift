@@ -4,108 +4,98 @@
 //
 
 import SwiftUI
+import Charts
 
 struct MeasurementView: View {
-    let icon: String
-    let title: String
-    let measurement: String
-    let unit: String
-    let classification: String
+    let measurementCategory: Measurements.Category
+    
+    @Environment(MeasurementService.self) private var measurementService: MeasurementService
+    
+    private var measurement: Measurements? {
+        measurementService.measurements.first { $0.category == measurementCategory }
+    }
+    
+    private var data: [MeasurementPoint] {
+        measurement?.data.suffix(10) ?? []
+    }
+    
+    private var dateInterval: DateInterval {
+        let startOfDay = Calendar.current.startOfDay(for: Date())
+        let endOfDay =  Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+        return DateInterval(start: startOfDay, end: endOfDay)
+    }
+    
+    private var yDomain: ClosedRange<Double> {
+        let min = data.min { point1, point2 in
+            point1.value < point2.value
+        }
+        
+        let max = data.min { point1, point2 in
+            point1.value > point2.value
+        }
+        
+        guard let min, let max else { return 0...0 }
+        return min.value...max.value
+    }
     
     var body: some View {
-        VStack(alignment: .leading) {
+        VStack {
             HStack {
-                Image(systemName: icon)
+                Image(systemName: measurement?.category.icon ?? "")
                     .textStyle(.icon(.accent))
-                Text(title)
+                Text(measurementCategory.name)
                     .textStyle(.subtitle())
                 Spacer()
                 Image(systemName: "arrow.right")
                     .textStyle(.icon())
+                    .padding(.bottom)
             }
             HStack {
-                HStack(alignment: .lastTextBaseline) {
-                    Text(measurement)
-                        .textStyle(.headline())
-                    Text(unit)
-                        .textStyle(.subtitle())
-                        .padding(.trailing, 20)
+                VStack(alignment: .leading) {
+                    HStack(alignment: .lastTextBaseline) {
+                        Text(measurement?.data.last?.value ?? 0, format: .number.precision(.fractionLength(0)))
+                            .textStyle(.headline())
+                        Text(measurement?.category.unit ?? "")
+                            .textStyle(.subtitle())
+                            .padding(.trailing, 20)
+                    }
+                    Spacer()
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .textStyle(.icon(.approve))
+                        Text(measurement?.classification.rawValue ?? "N/A")
+                            .textStyle(.body())
+                    }
                 }
-                Spacer()
-                ECGWave()
-                    .stroke(.accent, lineWidth: 2)
-                    .background(.clear)
-            }
-            HStack {
-                Image(systemName: "checkmark.circle.fill")
-                    .textStyle(.icon(.approve))
-                Text(classification)
-                    .textStyle(.body())
+                chart
+                    .frame(height: 80)
             }
         }
         .padding()
         .background(.surface)
         .cornerRadius(6)
     }
-}
-
-//ChatGPT code
-struct ECGWave: Shape {
-    var frequency: Int = 3  // Increase this to have more beats appear across the width
     
-    func path(in rect: CGRect) -> Path {
-        var path = Path()
-        let width = rect.width
-        let height = rect.height
-        let midY = height / 2
-        
-        func y(at x: CGFloat) -> CGFloat {
-            let normalized = (x / width) * CGFloat(frequency)
-            let pHeight: CGFloat = 0.05 * height
-            let qDepth: CGFloat = 0.15 * height
-            let rPeak: CGFloat = 0.4 * height
-            let sDepth: CGFloat = 0.1 * height
-            let tHeight: CGFloat = 0.1 * height
-            
-            let cycle = normalized.truncatingRemainder(dividingBy: 1)
-            
-            switch cycle {
-            case 0.08..<0.12:
-                let progress = (cycle - 0.08) / 0.04
-                return midY - sin(progress * .pi) * pHeight
-            case 0.2..<0.22:
-                let progress = (cycle - 0.2) / 0.02
-                return midY + progress * qDepth
-            case 0.22..<0.25:
-                let progress = (cycle - 0.22) / 0.03
-                return midY + qDepth - progress * (qDepth + rPeak)
-            case 0.25..<0.28:
-                let progress = (cycle - 0.25) / 0.03
-                return midY - rPeak + progress * (rPeak + sDepth)
-            case 0.28..<0.35:
-                let progress = (cycle - 0.28) / 0.07
-                return (midY + sDepth) - progress * sDepth
-            case 0.35..<0.45:
-                let center = 0.4
-                let width = 0.1
-                let progress = (cycle - (center - width/2)) / width
-                return midY - sin(progress * .pi) * tHeight
-            default:
-                return midY
+    private var chart: some View {
+        Chart {
+            ForEach(data, id: \.self) { measurement in
+                LineMark(
+                    x: .value("Date", measurement.date),
+                    y: .value("Value", measurement.value)
+                )
             }
         }
-        
-        path.move(to: CGPoint(x: 0, y: midY))
-        for i in 1..<Int(width) {
-            path.addLine(to: CGPoint(x: CGFloat(i), y: y(at: CGFloat(i))))
-        }
-        return path
+        .foregroundStyle(.tint)
+        .chartYScale(domain: yDomain)
+        .chartXAxis(.hidden)
+        .chartYAxis(.hidden)
     }
 }
 
 #Preview {
     ScrollView {
-        MeasurementView(icon: "heart.fill", title: "Heart Rate", measurement: "86", unit: "bpm", classification: "Normal")
+        MeasurementView(measurementCategory: .temperature)
+            .environment(MeasurementService())
             //.frame(height: 150)
             .padding()
     }
