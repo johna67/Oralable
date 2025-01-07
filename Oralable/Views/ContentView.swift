@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
     enum Scene {
-        case splash, login, onboarding, main
+        case splash, onboarding, main
     }
 
     @State private var scene = Scene.splash
@@ -17,8 +17,6 @@ struct ContentView: View {
     var body: some View {
         Group {
             switch scene {
-            case .login:
-                LoginView()
             case .splash:
                 SplashView()
             case .onboarding:

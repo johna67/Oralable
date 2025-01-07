@@ -10,9 +10,11 @@ struct ChartView: View {
     @Environment(MeasurementService.self) var measurementService: MeasurementService
     @State private var selectedRange: ChartRange = .day
     @State private var startTimeInterval = TimeInterval()
-    let measurementCategory: Measurements.Category
+    let measurementType: MeasurementType
     
     private enum ChartRange: String, CaseIterable, Identifiable {
+//        case minute = "Minute"
+//        case hour = "Hour"
         case day = "Day"
         case week = "Week"
         case month = "Month"
@@ -20,36 +22,33 @@ struct ChartView: View {
         var id: String { self.rawValue }
     }
     
-    private var chartScrollMatching: DateComponents {
-        switch selectedRange {
-        case .day:
-            return DateComponents(hour: 6)
-        case .week:
-            return DateComponents(weekday: 0)
-        case .month:
-            return DateComponents(day: 1)
-        }
-    }
+//    private var chartScrollMatching: DateComponents {
+//        return switch selectedRange {
+//        case .minute: DateComponents(minute: 0)
+//        case .hour: DateComponents(minute: 15)
+//        case .day: DateComponents(hour: 6)
+//        case .week: DateComponents(weekday: 0)
+//        case .month: DateComponents(day: 1)
+//        }
+//    }
     
     private var visibleDomainLength: Double {
-        switch selectedRange {
-        case .day:
-            return 3600 * 24
-        case .week:
-            return 3600 * 24 * 7
-        case .month:
-            return 3600 * 24 * 30
+        return switch selectedRange {
+//        case .minute: 60
+//        case .hour: 3600
+        case .day: 3600 * 24
+        case .week: 3600 * 24 * 7
+        case .month: 3600 * 24 * 30
         }
     }
     
     private var targetBehavior: ValueAlignedChartScrollTargetBehavior {
-        switch selectedRange {
-        case .day:
-            return .valueAligned(matching: DateComponents(hour: 0), majorAlignment: .matching(DateComponents(hour: 0)))
-        case .week:
-            return .valueAligned(matching: DateComponents(hour: 0), majorAlignment: .matching(DateComponents(weekday: 1)))
-        case .month:
-            return .valueAligned(matching: DateComponents(hour: 0), majorAlignment: .matching(DateComponents(day: 1)))
+        return switch selectedRange {
+//        case .minute: .valueAligned(matching: DateComponents(minute: 0), majorAlignment: .matching(DateComponents(minute: 0)))
+//        case .hour: .valueAligned(matching: DateComponents(minute: 0), majorAlignment: .matching(DateComponents(hour: 0)))
+        case .day: .valueAligned(matching: DateComponents(hour: 0), majorAlignment: .matching(DateComponents(hour: 0)))
+        case .week: .valueAligned(matching: DateComponents(hour: 0), majorAlignment: .matching(DateComponents(weekday: 1)))
+        case .month: .valueAligned(matching: DateComponents(hour: 0), majorAlignment: .matching(DateComponents(day: 1)))
         }
     }
     private var yDomain: ClosedRange<Double> {
@@ -93,18 +92,14 @@ struct ChartView: View {
 //        }
 //    }
     
-    private var data: [MeasurementPoint] {
-        measurementService.measurements.first { $0.category == measurementCategory }?.data ?? []
-    }
-    
-    private var dateFormatForXAxis: Date.FormatStyle {
-        switch selectedRange {
-        case .day:
-            return .dateTime.hour()
-        case .week:
-            return .dateTime.weekday(.abbreviated)
-        case .month:
-            return .dateTime.weekday(.abbreviated).day()
+    private var data: [MeasurementData] {
+        switch measurementType {
+        case .muscleActivityMagnitude:
+            return measurementService.muscleActivityMagnitude
+        case .movement:
+            return measurementService.movement
+        default:
+            return []
         }
     }
     
@@ -125,21 +120,22 @@ struct ChartView: View {
     private var chart: some View {
         Chart {
             ForEach(data, id: \.self) { measurement in
-                LineMark(
-                    x: .value("Date", measurement.date),
-                    y: .value("Value", measurement.value)
-                )
+//                LineMark(
+//                    x: .value("Date", measurement.date),
+//                    y: .value("Value", measurement.value)
+//                )
 
                 PointMark(
                     x: .value("Date", measurement.date),
                     y: .value("Value", measurement.value)
                 )
-                .symbol(Circle())
             }
+            
+            //PointPlot(data, x: .value("Date", \.date), y: .value("Value", \.value))
         }
-        .foregroundStyle(.tint)
+        .foregroundStyle(.tint.opacity(0.2))
         .chartScrollableAxes(.horizontal)
-        .chartXScale(range: .plotDimension(padding: 10))
+        //.chartXScale(range: .plotDimension(padding: 10))
         .chartYScale(domain: yDomain)
         //.chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end)
         .chartXVisibleDomain(length: visibleDomainLength)
@@ -212,6 +208,6 @@ struct ChartView: View {
 }
 
 #Preview {
-    ChartView(measurementCategory: .heartRate)
+    ChartView(measurementType: .heartRate)
         .environment(MeasurementService())
 }

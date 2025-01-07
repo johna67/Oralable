@@ -7,54 +7,73 @@ import Foundation
 
 public protocol Model: Hashable, Codable { }
 
-struct MeasurementPoint: Model {
+struct MeasurementData: Model {
     let date: Date
     let value: Double
 }
 
-struct Measurements: Model {
-    enum Source: Codable {
-        case healthKit, peripheral
-    }
+struct SummaryData: Model {
+    let date: Date
+    var value: Int
+}
+
+enum MeasurementType: String, Codable {
+    case heartRate
+    case temperature
+    case muscleActivity
+    case muscleActivityMagnitude
+    case movement
     
-    enum Category: String, Codable {
-        case heartRate
-        case muscleActivity
-        case temperature
-        
-        var unit: String {
-            switch self {
-            case .heartRate: return "bpm"
-            case .muscleActivity: return "%"
-            case .temperature: return "°C"
-            }
-        }
-        
-        var name: String {
-            switch self {
-            case .heartRate: return "Heart Rate"
-            case .muscleActivity: return "Muscle Activity"
-            case .temperature: return "Temperature"
-            }
-        }
-        
-        var icon: String {
-            switch self {
-            case .heartRate: return "heart.fill"
-            case .muscleActivity: return "distribute.vertical.fill"
-            case .temperature: return "medical.thermometer.fill"
-            }
+    var unit: String {
+        switch self {
+        case .heartRate: return "bpm"
+        case .temperature: return "°C"
+        case .muscleActivity: return "%"
+        case .muscleActivityMagnitude: return ""
+        case .movement: return ""
         }
     }
     
-    enum Classification: String, Codable {
-        case normal = "Normal"
-        case high = "High"
-        case low = "Low"
+    var name: String {
+        switch self {
+        case .heartRate: return "Heart Rate"
+        case .temperature: return "Temperature"
+        case .muscleActivity: return "Muscle Activity"
+        case .muscleActivityMagnitude: return "Muscle Activity Magnitude"
+        case .movement: return "Movement"
+        }
     }
     
-    let category: Category
-    let source: Source
-    let classification: Classification
-    let data: [MeasurementPoint]
+    var icon: String {
+        switch self {
+        case .heartRate: return "heart.fill"
+        case .temperature: return "medical.thermometer.fill"
+        case .muscleActivity: return "distribute.vertical.fill"
+        case .muscleActivityMagnitude: return "waveform.path"
+        case .movement: return "person.and.arrow.left.and.arrow.right.outward"
+        }
+    }
+}
+
+enum MeasurementClassification: String, Codable {
+    case normal = "Normal"
+    case high = "High"
+    case low = "Low"
+}
+
+//struct Measurements: Model {
+//    let category: Category
+//    let source: Source
+//    let classification: Classification
+//    var data: [MeasurementPoint]
+//}
+
+enum DeviceType: String, Codable {
+    case tgm = "TGM"
+}
+
+struct DeviceDescriptor: Model {
+    let type: DeviceType
+    let peripheralId: UUID
+    let serviceIds: [UUID]
 }

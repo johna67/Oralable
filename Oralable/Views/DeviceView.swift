@@ -6,7 +6,31 @@
 import SwiftUI
 
 struct DeviceView: View {
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) private var dismiss
+    @Environment(BluetoothStore.self) private var bluetooth: BluetoothStore
+    @State private var addingDevice: Bool = false
+    
+    private var statusString: String {
+        switch bluetooth.status {
+        case .connected:
+            return "Connected"
+        case .connecting:
+            return "Connecting..."
+        case .disconnected:
+            return "Disconnected"
+        }
+    }
+    
+    private var statusColor: Color {
+        switch bluetooth.status {
+        case .connected:
+            return .green
+        case .connecting:
+            return .blue
+        case .disconnected:
+            return .red
+        }
+    }
     
     var body: some View {
         VStack {
@@ -26,41 +50,46 @@ struct DeviceView: View {
                     .padding(.top)
                 Spacer()
             }
-            ScrollView {
-                VStack(alignment: .leading) {
-                    HStack {
-                        Text("TGM")
-                            .textStyle(.subtitle())
-                            .padding()
-                        Spacer()
-                        Text("Connected")
-                            .textStyle(.body(.approve))
+            if let device = bluetooth.pairedDevice {
+                ScrollView {
+                    VStack(alignment: .leading) {
+                        HStack {
+                            Text(device.type.rawValue)
+                                .textStyle(.subtitle())
+                            Spacer()
+                            Text(statusString)
+                                .textStyle(.body(statusColor))
+                        }
+                        .padding(.bottom)
+                        HStack {
+                            Spacer()
+                            Text(Measurement(value: Double(bluetooth.battery ?? 0), unit: UnitElectricPotentialDifference.millivolts).formatted())
+                                .textStyle(.smallBody())
+                        }
+                    }
+                    .padding()
+                    .background(.surface)
+                    .cornerRadius(6)
+                }
+            } else {
+                Spacer()
+                Text("No devices")
+                    .textStyle(.subtitle(.foreground))
+                Spacer()
+                PrimaryButton(icon: Image(systemName: "plus.circle.fill"), title: "Add device", disabled: false, progressing: false, progressingTitle: "Finding device") {
+                    Task {
+                        addingDevice = true
+                        await bluetooth.addDevice(.tgm)
+                        addingDevice = false
                     }
                 }
                 .padding()
-                .background(.surface)
-                .cornerRadius(6)
             }
-            Spacer()
-            Button {
-                
-            } label: {
-                HStack {
-                    Spacer()
-                    Text("Add a device")
-                        .textStyle(.body(.background))
-                    Spacer()
-                }
-            }
-            .padding()
-            .background(Color.foreground)
-            .cornerRadius(6)
-            .padding()
         }
         .padding()
     }
 }
 
 #Preview {
-    DeviceView()
+    DeviceView().environment(BluetoothStore())
 }

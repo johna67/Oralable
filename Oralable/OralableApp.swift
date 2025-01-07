@@ -6,14 +6,17 @@
 //
 
 import SwiftUI
+import LogKit
 
 @main
 struct OralableApp: App {
+    @State private var bluetooth = BluetoothStore()
+    
     var body: some Scene {
         WindowGroup {
-            //ContentView()
             HomeView()
                 .environment(MeasurementService())
+                .environment(bluetooth)
         }
     }
 }

@@ -7,16 +7,23 @@ import SwiftUI
 import Charts
 
 struct MeasurementView: View {
-    let measurementCategory: Measurements.Category
+    let measurementType: MeasurementType
     
-    @Environment(MeasurementService.self) private var measurementService: MeasurementService
+    @Environment(MeasurementService.self) private var measurementService
     
-    private var measurement: Measurements? {
-        measurementService.measurements.first { $0.category == measurementCategory }
+    private var data: [MeasurementData] {
+        switch measurementType {
+        case .muscleActivityMagnitude:
+            return measurementService.muscleActivityMagnitude.suffix(60)
+        case .movement:
+            return measurementService.movement.suffix(60)
+        default:
+            return []
+        }
     }
     
-    private var data: [MeasurementPoint] {
-        measurement?.data.suffix(10) ?? []
+    private var measurementHidden: Bool {
+        measurementType == .muscleActivityMagnitude || measurementType == .movement
     }
     
     private var dateInterval: DateInterval {
@@ -41,9 +48,9 @@ struct MeasurementView: View {
     var body: some View {
         VStack {
             HStack {
-                Image(systemName: measurement?.category.icon ?? "")
+                Image(systemName: measurementType.icon)
                     .textStyle(.icon(.accent))
-                Text(measurementCategory.name)
+                Text(measurementType.name)
                     .textStyle(.subtitle())
                 Spacer()
                 Image(systemName: "arrow.right")
@@ -52,23 +59,29 @@ struct MeasurementView: View {
             }
             HStack {
                 VStack(alignment: .leading) {
-                    HStack(alignment: .lastTextBaseline) {
-                        Text(measurement?.data.last?.value ?? 0, format: .number.precision(.fractionLength(0)))
-                            .textStyle(.headline())
-                        Text(measurement?.category.unit ?? "")
-                            .textStyle(.subtitle())
-                            .padding(.trailing, 20)
+                    if !measurementHidden {
+                        HStack(alignment: .lastTextBaseline) {
+                            Text(data.last?.value ?? 0, format: .number.precision(.fractionLength(0)))
+                                .textStyle(.headline())
+                            Text(measurementType.unit)
+                                .textStyle(.subtitle())
+                                .padding(.trailing, 20)
+                        }
                     }
-                    Spacer()
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .textStyle(.icon(.approve))
-                        Text(measurement?.classification.rawValue ?? "N/A")
-                            .textStyle(.body())
-                    }
+                    //Spacer()
                 }
                 chart
                     .frame(height: 80)
+            }
+            HStack {
+                HStack {
+                    Image(systemName: "checkmark.circle.fill")
+                        .textStyle(.icon(.approve))
+                    //TODO: this classification should be done by MeasurementService
+                    Text("Normal")
+                        .textStyle(.body())
+                    Spacer()
+                }
             }
         }
         .padding()
@@ -84,9 +97,17 @@ struct MeasurementView: View {
                     y: .value("Value", measurement.value)
                 )
             }
+//            RectangleMark(
+//                xStart: .value("Date", data[data.count - 20].date),
+//                xEnd: .value("Date", data[data.count - 5].date),
+//                yStart: .value("Value", 0),
+//                yEnd: .value("Value", 1000000)
+//            )
+//            .foregroundStyle(.blue.opacity(0.1))
         }
         .foregroundStyle(.tint)
-        .chartYScale(domain: yDomain)
+        .chartXVisibleDomain(length: 60)
+        //.chartYScale(domain: yDomain)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
     }
@@ -94,7 +115,7 @@ struct MeasurementView: View {
 
 #Preview {
     ScrollView {
-        MeasurementView(measurementCategory: .temperature)
+        MeasurementView(measurementType: .temperature)
             .environment(MeasurementService())
             //.frame(height: 150)
             .padding()

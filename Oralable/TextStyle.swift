@@ -7,8 +7,10 @@ import SwiftUI
 
 enum TextStyle {
     case body(Color? = nil)
+    case button(Color? = nil)
     case headline(Color? = nil)
     case subtitle(Color? = nil)
+    case smallBody(Color? = nil)
     case icon(Color? = nil)
     case iconLarge(Color? = nil)
 }
@@ -23,15 +25,21 @@ struct TextStyleModifier: ViewModifier {
             content
                 .font(.body)
                 .foregroundColor(color ?? defaultColor)
+        case .smallBody(let color):
+            content
+                .font(.system(size: 12))
+                .foregroundColor(color ?? defaultColor)
+        case .button(let color):
+            content
+                .font(.system(size: 20, weight: .bold))
+                .foregroundColor(color ?? defaultColor)
         case .headline(let color):
             content
-                .font(.system(size: 36))
-                .bold()
+                .font(.system(size: 36, weight: .bold))
                 .foregroundColor(color ?? defaultColor)
         case .subtitle(let color):
             content
-                .font(.system(size: 20))
-                .bold()
+                .font(.system(size: 20, weight: .bold))
                 .foregroundColor(color ?? defaultColor)
         case .icon(let color):
             content

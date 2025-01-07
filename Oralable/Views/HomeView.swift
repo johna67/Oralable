@@ -8,6 +8,7 @@ import SwiftUI
 struct HomeView: View {
     @State private var moreShown = false
     @State private var deviceShown = false
+    @Environment(MeasurementService.self) private var measurementService
     
     var body: some View {
         NavigationStack {
@@ -44,19 +45,26 @@ struct HomeView: View {
                     .padding(.bottom)
                 ScrollView {
                     VStack(spacing: 20) {
-                        NavigationLink(value: Measurements.Category.heartRate) {
-                            MeasurementView(measurementCategory: Measurements.Category.heartRate)
+                        NavigationLink(value: MeasurementType.muscleActivityMagnitude) {
+                            MeasurementView(measurementType: .muscleActivityMagnitude)
                         }
-                        NavigationLink(value: Measurements.Category.muscleActivity) {
-                            MeasurementView(measurementCategory: Measurements.Category.muscleActivity)
+                        
+                        NavigationLink(value: MeasurementType.movement) {
+                            MeasurementView(measurementType: .movement)
                         }
-                        NavigationLink(value: Measurements.Category.temperature) {
-                            MeasurementView(measurementCategory: Measurements.Category.temperature)
-                        }
+//                        NavigationLink(value: Measurements.Category.heartRate) {
+//                            MeasurementView(measurementCategory: Measurements.Category.heartRate)
+//                        }
+//                        NavigationLink(value: Measurements.Category.muscleActivity) {
+//                            MeasurementView(measurementCategory: Measurements.Category.muscleActivity)
+//                        }
+//                        NavigationLink(value: Measurements.Category.temperature) {
+//                            MeasurementView(measurementCategory: Measurements.Category.temperature)
+//                        }
                     }
                 }
-                .navigationDestination(for: Measurements.Category.self) { category in
-                    ChartView(measurementCategory: category)
+                .navigationDestination(for: MeasurementType.self) { type in
+                    ChartView(measurementType: type)
                 }
                 Spacer()
             }
@@ -68,4 +76,5 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environment(MeasurementService())
+        .environment(BluetoothStore())
 }
