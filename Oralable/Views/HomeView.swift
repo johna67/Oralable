@@ -8,8 +8,8 @@ import SwiftUI
 struct HomeView: View {
     @State private var moreShown = false
     @State private var deviceShown = false
-    @Environment(MeasurementService.self) private var measurementService
-    
+    @Environment(MeasurementStore.self) private var measurements
+
     var body: some View {
         NavigationStack {
             VStack(alignment: .leading) {
@@ -48,7 +48,7 @@ struct HomeView: View {
                         NavigationLink(value: MeasurementType.muscleActivityMagnitude) {
                             MeasurementView(measurementType: .muscleActivityMagnitude)
                         }
-                        
+
                         NavigationLink(value: MeasurementType.movement) {
                             MeasurementView(measurementType: .movement)
                         }
@@ -75,6 +75,6 @@ struct HomeView: View {
 
 #Preview {
     HomeView()
-        .environment(MeasurementService())
+        .environment(MeasurementStore())
         .environment(BluetoothStore())
 }

@@ -4,8 +4,8 @@
 //
 
 import Foundation
-import SwiftData
 import LogKit
+import SwiftData
 
 protocol PersistenceService {
     func writePPGFrame(_ frame: PPGFrame)
@@ -25,14 +25,6 @@ final class PPGSampleModel {
         self.ir = ir
         self.green = green
     }
-    
-    func toPPGSample() -> PPGSample {
-        PPGSample(red: red, ir: ir, green: green)
-    }
-
-    convenience init(_ sample: PPGSample) {
-        self.init(red: sample.red, ir: sample.ir, green: sample.green)
-    }
 }
 
 @Model
@@ -46,13 +38,13 @@ final class PPGFrameModel {
         self.timestamp = timestamp
         self.avgSample = avgSample
     }
-    
+
     func toPPGFrame() -> PPGFrame {
-        PPGFrame(frameCounter: frameCounter, timestamp: timestamp, avgSample: avgSample.toPPGSample())
+        PPGFrame(frameCounter: frameCounter, timestamp: timestamp, avgSample: PPGSample(red: avgSample.red, ir: avgSample.ir, green: avgSample.green))
     }
 
     convenience init(_ frame: PPGFrame) {
-        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, avgSample: PPGSampleModel(frame.avgSample))
+        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, avgSample: PPGSampleModel(red: frame.avgSample.red, ir: frame.avgSample.ir, green: frame.avgSample.green))
     }
 }
 
@@ -66,14 +58,6 @@ final class AccelerometerSampleModel {
         self.x = x
         self.y = y
         self.z = z
-    }
-
-    convenience init(_ sample: AccelerometerSample) {
-        self.init(x: sample.x, y: sample.y, z: sample.z)
-    }
-    
-    func toAccelerometerSample() -> AccelerometerSample {
-        AccelerometerSample(x: x, y: y, z: z)
     }
 }
 
@@ -90,17 +74,17 @@ final class AccelerometerFrameModel {
     }
 
     convenience init(_ frame: AccelerometerFrame) {
-        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, maxSample: AccelerometerSampleModel(frame.maxSample))
+        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, maxSample: AccelerometerSampleModel(x: frame.maxSample.x, y: frame.maxSample.y, z: frame.maxSample.z))
     }
-    
+
     func toAccelerometerFrame() -> AccelerometerFrame {
-        AccelerometerFrame(frameCounter: frameCounter, timestamp: timestamp, maxSample: maxSample.toAccelerometerSample())
+        AccelerometerFrame(frameCounter: frameCounter, timestamp: timestamp, maxSample: AccelerometerSample(x: maxSample.x, y: maxSample.y, z: maxSample.z))
     }
 }
 
 final class SwiftDataPersistence: PersistenceService {
     private var container: ModelContainer!
-        
+
     init() {
         do {
             container = try ModelContainer(
@@ -123,7 +107,7 @@ final class SwiftDataPersistence: PersistenceService {
         let model = AccelerometerFrameModel(frame)
         write(model)
     }
-    
+
     func readPPGFrames(limit: Int? = nil) -> [PPGFrame] {
         let context = ModelContext(container)
         do {
@@ -142,7 +126,7 @@ final class SwiftDataPersistence: PersistenceService {
             return []
         }
     }
-    
+
     func readAccelerometerFrames(limit: Int? = nil) -> [AccelerometerFrame] {
         let context = ModelContext(container)
         do {
@@ -161,7 +145,7 @@ final class SwiftDataPersistence: PersistenceService {
             return []
         }
     }
-    
+
     private func write(_ model: any PersistentModel) {
         let context = ModelContext(container)
         context.insert(model)

@@ -3,8 +3,8 @@
 // Copyright 2024 Gabor Detari. All rights reserved.
 //
 
-import Foundation
 import Factory
+import Foundation
 
 extension Container {
     var bluetoothService: Factory<BluetoothService> {
@@ -12,6 +12,11 @@ extension Container {
             .singleton
     }
     
+    var bluetoothAuthorizationService: Factory<BluetoothAuthorizationService> {
+        Factory(self) { @MainActor in BluetoothAuthorizationService() }
+            .singleton
+    }
+
     var persistenceService: Factory<PersistenceService> {
         Factory(self) { @MainActor in SwiftDataPersistence() }
             .singleton

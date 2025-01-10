@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		44A79D632C90499E00BD84DD /* OralableApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D622C90499E00BD84DD /* OralableApp.swift */; };
-		44A79D652C90499E00BD84DD /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D642C90499E00BD84DD /* ContentView.swift */; };
 		44A79D672C9049A000BD84DD /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 44A79D662C9049A000BD84DD /* Assets.xcassets */; };
 		44A79D6A2C9049A000BD84DD /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 44A79D692C9049A000BD84DD /* Preview Assets.xcassets */; };
 		44A79D742C9049A000BD84DD /* OralableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D732C9049A000BD84DD /* OralableTests.swift */; };
@@ -22,12 +21,14 @@
 		AF4C15B82D23E62C00AAA005 /* Factory in Frameworks */ = {isa = PBXBuildFile; productRef = AF4C15B72D23E62C00AAA005 /* Factory */; };
 		AF4C15BA2D23E66200AAA005 /* Service.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4C15B92D23E66200AAA005 /* Service.swift */; };
 		AF4C15BF2D23F32200AAA005 /* Environment.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4C15BE2D23F32200AAA005 /* Environment.swift */; };
+		AF677A212D2F6E7400CDACE3 /* BluetoothStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF677A202D2F6E7400CDACE3 /* BluetoothStore.swift */; };
+		AF677A232D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF677A222D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift */; };
+		AF677A252D2FAEB500CDACE3 /* BluetoothRestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF677A242D2FAEB500CDACE3 /* BluetoothRestoreService.swift */; };
+		AF677A272D312E0A00CDACE3 /* ConnectionIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF677A262D312E0A00CDACE3 /* ConnectionIndicatorView.swift */; };
 		AF8F42A52D253CAE00D7B2FD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8F42A42D253CAE00D7B2FD /* Button.swift */; };
 		AF8F42A72D2692E400D7B2FD /* PersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */; };
-		AFBD414F2D1023A900E0C962 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFBD414E2D1023A900E0C962 /* MainView.swift */; };
 		AFEC199F2D102A0100404D42 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC199E2D102A0100404D42 /* SplashView.swift */; };
 		AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A22D102D3C00404D42 /* HomeView.swift */; };
-		AFEC19A52D102D6000404D42 /* ShareView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A42D102D6000404D42 /* ShareView.swift */; };
 		AFEC19A72D102F8400404D42 /* TextStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A62D102F8400404D42 /* TextStyle.swift */; };
 		AFEC19B32D116DD000404D42 /* MoreView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19B22D116DD000404D42 /* MoreView.swift */; };
 		AFEC19B52D116E9C00404D42 /* AboutView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19B42D116E9C00404D42 /* AboutView.swift */; };
@@ -39,7 +40,7 @@
 		AFEC19C22D11847700404D42 /* DeviceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19C12D11847700404D42 /* DeviceView.swift */; };
 		AFEC19C52D11882200404D42 /* MeasurementView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19C42D11882200404D42 /* MeasurementView.swift */; };
 		AFEC19C92D12B12700404D42 /* ChartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19C82D12B12700404D42 /* ChartView.swift */; };
-		AFEC19CD2D12BF8E00404D42 /* MeasurementService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19CC2D12BF8E00404D42 /* MeasurementService.swift */; };
+		AFEC19CD2D12BF8E00404D42 /* MeasurementStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19CC2D12BF8E00404D42 /* MeasurementStore.swift */; };
 		AFEC19D32D12C12F00404D42 /* Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19D22D12C12F00404D42 /* Models.swift */; };
 /* End PBXBuildFile section */
 
@@ -63,7 +64,6 @@
 /* Begin PBXFileReference section */
 		44A79D5F2C90499E00BD84DD /* Oralable.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Oralable.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		44A79D622C90499E00BD84DD /* OralableApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableApp.swift; sourceTree = "<group>"; };
-		44A79D642C90499E00BD84DD /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		44A79D662C9049A000BD84DD /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		44A79D692C9049A000BD84DD /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		44A79D6F2C9049A000BD84DD /* OralableTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OralableTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -77,12 +77,14 @@
 		AF4C15B32D1E7A5B00AAA005 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		AF4C15B92D23E66200AAA005 /* Service.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Service.swift; sourceTree = "<group>"; };
 		AF4C15BE2D23F32200AAA005 /* Environment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Environment.swift; sourceTree = "<group>"; };
+		AF677A202D2F6E7400CDACE3 /* BluetoothStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothStore.swift; sourceTree = "<group>"; };
+		AF677A222D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothAuthorizationService.swift; sourceTree = "<group>"; };
+		AF677A242D2FAEB500CDACE3 /* BluetoothRestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothRestoreService.swift; sourceTree = "<group>"; };
+		AF677A262D312E0A00CDACE3 /* ConnectionIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionIndicatorView.swift; sourceTree = "<group>"; };
 		AF8F42A42D253CAE00D7B2FD /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceService.swift; sourceTree = "<group>"; };
-		AFBD414E2D1023A900E0C962 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MainView.swift; sourceTree = "<group>"; };
 		AFEC199E2D102A0100404D42 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		AFEC19A22D102D3C00404D42 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		AFEC19A42D102D6000404D42 /* ShareView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareView.swift; sourceTree = "<group>"; };
 		AFEC19A62D102F8400404D42 /* TextStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStyle.swift; sourceTree = "<group>"; };
 		AFEC19B22D116DD000404D42 /* MoreView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MoreView.swift; sourceTree = "<group>"; };
 		AFEC19B42D116E9C00404D42 /* AboutView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AboutView.swift; sourceTree = "<group>"; };
@@ -94,7 +96,7 @@
 		AFEC19C12D11847700404D42 /* DeviceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceView.swift; sourceTree = "<group>"; };
 		AFEC19C42D11882200404D42 /* MeasurementView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementView.swift; sourceTree = "<group>"; };
 		AFEC19C82D12B12700404D42 /* ChartView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChartView.swift; sourceTree = "<group>"; };
-		AFEC19CC2D12BF8E00404D42 /* MeasurementService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementService.swift; sourceTree = "<group>"; };
+		AFEC19CC2D12BF8E00404D42 /* MeasurementStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeasurementStore.swift; sourceTree = "<group>"; };
 		AFEC19D22D12C12F00404D42 /* Models.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Models.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -150,6 +152,7 @@
 		44A79D612C90499E00BD84DD /* Oralable */ = {
 			isa = PBXGroup;
 			children = (
+				AF677A1F2D2F6E5100CDACE3 /* Stores */,
 				AF4C15B32D1E7A5B00AAA005 /* Info.plist */,
 				AFEC19CB2D12BF3500404D42 /* Views */,
 				AFEC19CA2D12BE7000404D42 /* Services */,
@@ -198,6 +201,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		AF677A1F2D2F6E5100CDACE3 /* Stores */ = {
+			isa = PBXGroup;
+			children = (
+				AFEC19CC2D12BF8E00404D42 /* MeasurementStore.swift */,
+				AF677A202D2F6E7400CDACE3 /* BluetoothStore.swift */,
+			);
+			path = Stores;
+			sourceTree = "<group>";
+		};
 		AFEC19B82D116F0100404D42 /* ActivityView */ = {
 			isa = PBXGroup;
 			children = (
@@ -211,6 +223,7 @@
 			isa = PBXGroup;
 			children = (
 				AFEC19C42D11882200404D42 /* MeasurementView.swift */,
+				AF677A262D312E0A00CDACE3 /* ConnectionIndicatorView.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -218,11 +231,12 @@
 		AFEC19CA2D12BE7000404D42 /* Services */ = {
 			isa = PBXGroup;
 			children = (
-				AFEC19CC2D12BF8E00404D42 /* MeasurementService.swift */,
 				AF4C15A72D1D6D4E00AAA005 /* BluetoothService.swift */,
 				AF4C15AC2D1D6E5300AAA005 /* DeviceService.swift */,
 				AF4C15B92D23E66200AAA005 /* Service.swift */,
 				AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */,
+				AF677A222D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift */,
+				AF677A242D2FAEB500CDACE3 /* BluetoothRestoreService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -232,11 +246,8 @@
 			children = (
 				AFEC19C32D11881200404D42 /* Components */,
 				AFEC19B82D116F0100404D42 /* ActivityView */,
-				44A79D642C90499E00BD84DD /* ContentView.swift */,
-				AFBD414E2D1023A900E0C962 /* MainView.swift */,
 				AFEC199E2D102A0100404D42 /* SplashView.swift */,
 				AFEC19A22D102D3C00404D42 /* HomeView.swift */,
-				AFEC19A42D102D6000404D42 /* ShareView.swift */,
 				AFEC19B22D116DD000404D42 /* MoreView.swift */,
 				AFEC19B42D116E9C00404D42 /* AboutView.swift */,
 				AFEC19BF2D1170BA00404D42 /* WebView.swift */,
@@ -409,9 +420,9 @@
 				AF4C15A82D1D6D4E00AAA005 /* BluetoothService.swift in Sources */,
 				AFEC19A72D102F8400404D42 /* TextStyle.swift in Sources */,
 				AF4C15BA2D23E66200AAA005 /* Service.swift in Sources */,
-				44A79D652C90499E00BD84DD /* ContentView.swift in Sources */,
 				AFEC199F2D102A0100404D42 /* SplashView.swift in Sources */,
 				AFEC19B92D116F0100404D42 /* ActivityItem.swift in Sources */,
+				AF677A232D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift in Sources */,
 				AFEC19BA2D116F0100404D42 /* ActivityView.swift in Sources */,
 				AFEC19B32D116DD000404D42 /* MoreView.swift in Sources */,
 				AFEC19C22D11847700404D42 /* DeviceView.swift in Sources */,
@@ -419,14 +430,15 @@
 				AFEC19B52D116E9C00404D42 /* AboutView.swift in Sources */,
 				AFEC19BC2D116F1C00404D42 /* AppMetadata.swift in Sources */,
 				AFEC19C92D12B12700404D42 /* ChartView.swift in Sources */,
-				AFBD414F2D1023A900E0C962 /* MainView.swift in Sources */,
-				AFEC19A52D102D6000404D42 /* ShareView.swift in Sources */,
 				AFEC19C52D11882200404D42 /* MeasurementView.swift in Sources */,
 				AF8F42A52D253CAE00D7B2FD /* Button.swift in Sources */,
-				AFEC19CD2D12BF8E00404D42 /* MeasurementService.swift in Sources */,
+				AFEC19CD2D12BF8E00404D42 /* MeasurementStore.swift in Sources */,
+				AF677A272D312E0A00CDACE3 /* ConnectionIndicatorView.swift in Sources */,
 				AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */,
+				AF677A252D2FAEB500CDACE3 /* BluetoothRestoreService.swift in Sources */,
 				AF8F42A72D2692E400D7B2FD /* PersistenceService.swift in Sources */,
 				44A79D632C90499E00BD84DD /* OralableApp.swift in Sources */,
+				AF677A212D2F6E7400CDACE3 /* BluetoothStore.swift in Sources */,
 				AF4C15BF2D23F32200AAA005 /* Environment.swift in Sources */,
 				AFEC19BE2D116FC800404D42 /* Extensions.swift in Sources */,
 				AF4C15AD2D1D6E5300AAA005 /* DeviceService.swift in Sources */,
@@ -599,7 +611,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Oralable/Preview Content\"";
-				DEVELOPMENT_TEAM = THKF822TTP;
+				DEVELOPMENT_TEAM = 9V9K46ZMDV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Oralable/Info.plist;
@@ -633,7 +645,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"Oralable/Preview Content\"";
-				DEVELOPMENT_TEAM = THKF822TTP;
+				DEVELOPMENT_TEAM = 9V9K46ZMDV;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = Oralable/Info.plist;

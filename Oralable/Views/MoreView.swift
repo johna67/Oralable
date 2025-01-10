@@ -8,6 +8,7 @@ import SwiftUI
 struct MoreView: View {
     @State private var signOutConfirmationShown = false
     @State private var shareItem: ActivityItem?
+    @Environment(MeasurementStore.self) var measurements: MeasurementStore
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
@@ -36,8 +37,7 @@ struct MoreView: View {
                             Text("About")
                         }
                     }
-//                    .listRowBackground(Color.surface)
-                    
+
                     Section {
                         Button {
                             shareItem = ActivityItem(items: AppMetadata.appStoreUrl)
@@ -58,8 +58,7 @@ struct MoreView: View {
                             }
                         }
                     }
-                    //.listRowBackground(Color.surface)
-                    
+ 
                     Section {
                         NavigationLink(destination: WebView(url: AppMetadata.termsUrl)) {
                             Image(systemName: "doc.text")
@@ -70,11 +69,12 @@ struct MoreView: View {
                             Text("Privacy Policy")
                         }
                     }
-                    //.listRowBackground(Color.YogaNidra.surface)
                     
                     Section {
                         Button {
-                            shareItem = ActivityItem(items: AppMetadata.appStoreUrl)
+                            if let url = measurements.exportToFile() {
+                                shareItem = ActivityItem(items: url)
+                            }
                         } label: {
                             HStack {
                                 Image(systemName: "waveform.path.ecg")
@@ -84,7 +84,7 @@ struct MoreView: View {
                         .activitySheet($shareItem) { _, _, _, _ in
                         }
                     }
-                    
+
                     Section {
                         Button {
                             signOutConfirmationShown = true
@@ -95,12 +95,9 @@ struct MoreView: View {
                             }
                         }
                         .confirmationDialog("Are you sure you want to sign out?", isPresented: $signOutConfirmationShown, titleVisibility: .visible) {
-                            Button("Sign Out", role: .destructive) {
-                                
-                            }
+                            Button("Sign Out", role: .destructive) {}
                         }
                     }
-                    
                 }
             }
             .foregroundStyle(Color.foreground)
@@ -109,9 +106,9 @@ struct MoreView: View {
                     .opacity(0.3)
                     .padding()
             }
-            //.scrollContentBackground(.hidden)
+            // .scrollContentBackground(.hidden)
         }
-        //.navigationBarHidden(true)
+        // .navigationBarHidden(true)
     }
 }
 

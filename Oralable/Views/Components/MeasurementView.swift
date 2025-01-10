@@ -3,48 +3,53 @@
 // Copyright 2024 Gabor Detari. All rights reserved.
 //
 
-import SwiftUI
 import Charts
+import SwiftUI
 
 struct MeasurementView: View {
     let measurementType: MeasurementType
-    
-    @Environment(MeasurementService.self) private var measurementService
-    
+
+    @Environment(MeasurementStore.self) private var measurements
+    @Environment(BluetoothStore.self) private var bluetooth
+
     private var data: [MeasurementData] {
         switch measurementType {
         case .muscleActivityMagnitude:
-            return measurementService.muscleActivityMagnitude.suffix(60)
+            measurements.muscleActivityMagnitude.suffix(60)
         case .movement:
-            return measurementService.movement.suffix(60)
+            measurements.movement.suffix(60)
         default:
-            return []
+            []
         }
     }
-    
+
     private var measurementHidden: Bool {
         measurementType == .muscleActivityMagnitude || measurementType == .movement
     }
-    
+
     private var dateInterval: DateInterval {
         let startOfDay = Calendar.current.startOfDay(for: Date())
-        let endOfDay =  Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
+        let endOfDay = Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!
         return DateInterval(start: startOfDay, end: endOfDay)
     }
-    
+
     private var yDomain: ClosedRange<Double> {
         let min = data.min { point1, point2 in
             point1.value < point2.value
         }
-        
+
         let max = data.min { point1, point2 in
             point1.value > point2.value
         }
-        
-        guard let min, let max else { return 0...0 }
-        return min.value...max.value
+
+        guard let min, let max else { return 0 ... 0 }
+        return min.value ... max.value
     }
     
+    private var currentRangeInterval: DateInterval {
+        DateInterval(start: Calendar.current.date(byAdding: .minute, value: -1, to: Date())!, end: Date())
+    }
+
     var body: some View {
         VStack {
             HStack {
@@ -68,27 +73,25 @@ struct MeasurementView: View {
                                 .padding(.trailing, 20)
                         }
                     }
-                    //Spacer()
                 }
                 chart
                     .frame(height: 80)
             }
             HStack {
-                HStack {
-                    Image(systemName: "checkmark.circle.fill")
-                        .textStyle(.icon(.approve))
-                    //TODO: this classification should be done by MeasurementService
-                    Text("Normal")
-                        .textStyle(.body())
-                    Spacer()
+                ConnectionIndicatorView(connected: bluetooth.status == .connected)
+                if bluetooth.status == .connected {
+                    Text("Live")
+                        .textStyle(.body(bluetooth.status.statusColor))
                 }
+                
+                Spacer()
             }
         }
         .padding()
         .background(.surface)
         .cornerRadius(6)
     }
-    
+
     private var chart: some View {
         Chart {
             ForEach(data, id: \.self) { measurement in
@@ -107,6 +110,7 @@ struct MeasurementView: View {
         }
         .foregroundStyle(.tint)
         .chartXVisibleDomain(length: 60)
+        //.chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end)
         //.chartYScale(domain: yDomain)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
@@ -116,8 +120,9 @@ struct MeasurementView: View {
 #Preview {
     ScrollView {
         MeasurementView(measurementType: .temperature)
-            .environment(MeasurementService())
-            //.frame(height: 150)
+            .environment(MeasurementStore())
+            .environment(BluetoothStore())
+            // .frame(height: 150)
             .padding()
     }
 }

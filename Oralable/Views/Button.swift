@@ -57,8 +57,8 @@ struct PrimaryButton: View {
 
 #Preview {
     PrimaryButton(icon: Image(systemName: "arrow.2.circlepath"), title: "Reload", disabled: false, progressing: false) {}
-    
+
     PrimaryButton(icon: Image(systemName: "arrow.2.circlepath"), title: "Reload", disabled: true, progressing: false) {}
-    
+
     PrimaryButton(icon: Image(systemName: "arrow.2.circlepath"), title: "Reload", disabled: false, progressing: true, progressingTitle: "Reloading") {}
 }

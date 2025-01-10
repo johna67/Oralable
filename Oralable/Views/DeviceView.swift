@@ -9,29 +9,29 @@ struct DeviceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(BluetoothStore.self) private var bluetooth: BluetoothStore
     @State private var addingDevice: Bool = false
-    
+
     private var statusString: String {
         switch bluetooth.status {
         case .connected:
-            return "Connected"
+            "Connected"
         case .connecting:
-            return "Connecting..."
+            "Connecting..."
         case .disconnected:
-            return "Disconnected"
+            "Disconnected"
         }
     }
-    
+
     private var statusColor: Color {
         switch bluetooth.status {
         case .connected:
-            return .green
+            Color.approve
         case .connecting:
-            return .blue
+            .blue
         case .disconnected:
-            return .red
+            .red
         }
     }
-    
+
     var body: some View {
         VStack {
             HStack {
@@ -76,7 +76,7 @@ struct DeviceView: View {
                 Text("No devices")
                     .textStyle(.subtitle(.foreground))
                 Spacer()
-                PrimaryButton(icon: Image(systemName: "plus.circle.fill"), title: "Add device", disabled: false, progressing: false, progressingTitle: "Finding device") {
+                PrimaryButton(icon: Image(systemName: "plus.circle.fill"), title: "Add device", disabled: false, progressing: addingDevice, progressingTitle: "Finding device") {
                     Task {
                         addingDevice = true
                         await bluetooth.addDevice(.tgm)
@@ -87,6 +87,30 @@ struct DeviceView: View {
             }
         }
         .padding()
+    }
+}
+
+extension BluetoothStore.ConnectionStatus {
+    var statusString: String {
+        switch self {
+        case .connected:
+            "Connected"
+        case .connecting:
+            "Connecting..."
+        case .disconnected:
+            "Disconnected"
+        }
+    }
+
+    var statusColor: Color {
+        switch self {
+        case .connected:
+            Color.approve
+        case .connecting:
+            .blue
+        case .disconnected:
+            .red
+        }
     }
 }
 

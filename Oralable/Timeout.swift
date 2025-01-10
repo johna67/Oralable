@@ -4,7 +4,7 @@ public struct TimeoutError: LocalizedError {
     public var errorDescription: String?
 
     init(_ description: String) {
-        self.errorDescription = description
+        errorDescription = description
     }
 }
 
@@ -45,8 +45,7 @@ private func _withThrowingTimeout<T>(
         }
         timeoutTask.cancel()
 
-        if case .failure(let timeoutError) = await timeoutTask.result,
-           timeoutError is TimeoutError {
+        if case let .failure(timeoutError) = await timeoutTask.result, timeoutError is TimeoutError {
             throw timeoutError
         } else {
             return try bodyResult.get()
@@ -55,7 +54,7 @@ private func _withThrowingTimeout<T>(
 }
 
 private struct Transferring<Value>: Sendable {
-    nonisolated(unsafe) public var value: Value
+    public nonisolated(unsafe) var value: Value
     init(_ value: Value) {
         self.value = value
     }

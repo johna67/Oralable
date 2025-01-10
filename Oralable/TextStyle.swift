@@ -17,45 +17,44 @@ enum TextStyle {
 
 struct TextStyleModifier: ViewModifier {
     let style: TextStyle
-    
+
     func body(content: Content) -> some View {
         let defaultColor = Color("Foreground")
         switch style {
-        case .body(let color):
+        case let .body(color):
             content
                 .font(.body)
                 .foregroundColor(color ?? defaultColor)
-        case .smallBody(let color):
+        case let .smallBody(color):
             content
                 .font(.system(size: 12))
                 .foregroundColor(color ?? defaultColor)
-        case .button(let color):
+        case let .button(color):
             content
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(color ?? defaultColor)
-        case .headline(let color):
+        case let .headline(color):
             content
                 .font(.system(size: 36, weight: .bold))
                 .foregroundColor(color ?? defaultColor)
-        case .subtitle(let color):
+        case let .subtitle(color):
             content
                 .font(.system(size: 20, weight: .bold))
                 .foregroundColor(color ?? defaultColor)
-        case .icon(let color):
+        case let .icon(color):
             content
                 .font(.system(size: 16))
                 .foregroundColor(color ?? defaultColor)
-        case .iconLarge(let color):
+        case let .iconLarge(color):
             content
                 .font(.system(size: 24))
                 .foregroundColor(color ?? defaultColor)
         }
-        
     }
 }
 
 extension View {
     func textStyle(_ style: TextStyle) -> some View {
-        self.modifier(TextStyleModifier(style: style))
+        modifier(TextStyleModifier(style: style))
     }
 }
