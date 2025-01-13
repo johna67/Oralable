@@ -27,6 +27,7 @@
 		AF677A272D312E0A00CDACE3 /* ConnectionIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF677A262D312E0A00CDACE3 /* ConnectionIndicatorView.swift */; };
 		AF8F42A52D253CAE00D7B2FD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8F42A42D253CAE00D7B2FD /* Button.swift */; };
 		AF8F42A72D2692E400D7B2FD /* PersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */; };
+		AFDEE06D2D33E0AE00C02397 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = AFDEE06C2D33E0AE00C02397 /* .swiftlint.yml */; };
 		AFEC199F2D102A0100404D42 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC199E2D102A0100404D42 /* SplashView.swift */; };
 		AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A22D102D3C00404D42 /* HomeView.swift */; };
 		AFEC19A72D102F8400404D42 /* TextStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A62D102F8400404D42 /* TextStyle.swift */; };
@@ -83,6 +84,7 @@
 		AF677A262D312E0A00CDACE3 /* ConnectionIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionIndicatorView.swift; sourceTree = "<group>"; };
 		AF8F42A42D253CAE00D7B2FD /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceService.swift; sourceTree = "<group>"; };
+		AFDEE06C2D33E0AE00C02397 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
 		AFEC199E2D102A0100404D42 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		AFEC19A22D102D3C00404D42 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		AFEC19A62D102F8400404D42 /* TextStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStyle.swift; sourceTree = "<group>"; };
@@ -131,6 +133,7 @@
 		44A79D562C90499E00BD84DD = {
 			isa = PBXGroup;
 			children = (
+				AFDEE06C2D33E0AE00C02397 /* .swiftlint.yml */,
 				44A79D612C90499E00BD84DD /* Oralable */,
 				44A79D722C9049A000BD84DD /* OralableTests */,
 				44A79D7C2C9049A000BD84DD /* OralableUITests */,
@@ -265,6 +268,7 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 44A79D832C9049A000BD84DD /* Build configuration list for PBXNativeTarget "Oralable" */;
 			buildPhases = (
+				AFDEE06B2D33CFD300C02397 /* SwiftLint */,
 				44A79D5B2C90499E00BD84DD /* Sources */,
 				44A79D5C2C90499E00BD84DD /* Frameworks */,
 				44A79D5D2C90499E00BD84DD /* Resources */,
@@ -272,7 +276,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				AFEC19B12D115DA100404D42 /* PBXTargetDependency */,
 			);
 			name = Oralable;
 			productName = Oralable;
@@ -349,7 +352,6 @@
 			);
 			mainGroup = 44A79D562C90499E00BD84DD;
 			packageReferences = (
-				AFEC19AF2D115D9200404D42 /* XCRemoteSwiftPackageReference "SwiftLint" */,
 				AF4C15A62D1D6BD700AAA005 /* XCRemoteSwiftPackageReference "AsyncBluetooth" */,
 				AF4C15AE2D1D709100AAA005 /* XCRemoteSwiftPackageReference "logkit" */,
 				AF4C15B62D23E62C00AAA005 /* XCRemoteSwiftPackageReference "Factory" */,
@@ -370,6 +372,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AFDEE06D2D33E0AE00C02397 /* .swiftlint.yml in Resources */,
 				44A79D6A2C9049A000BD84DD /* Preview Assets.xcassets in Resources */,
 				44A79D672C9049A000BD84DD /* Assets.xcassets in Resources */,
 			);
@@ -392,6 +395,25 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		AFDEE06B2D33CFD300C02397 /* SwiftLint */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = SwiftLint;
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "export PATH=\"$PATH:/opt/homebrew/bin\"\nif which swiftlint > /dev/null; then\n  swiftlint\nelse\n  echo \"warning: SwiftLint not installed, try: brew install swiftlint\"\nfi\n";
+		};
 		AFEC19AD2D1159A900404D42 /* SwiftLint */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -477,10 +499,6 @@
 			target = 44A79D5E2C90499E00BD84DD /* Oralable */;
 			targetProxy = 44A79D7A2C9049A000BD84DD /* PBXContainerItemProxy */;
 		};
-		AFEC19B12D115DA100404D42 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			productRef = AFEC19B02D115DA100404D42 /* SwiftLintBuildToolPlugin */;
-		};
 /* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
@@ -521,7 +539,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -584,7 +602,7 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -633,7 +651,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -667,7 +685,7 @@
 				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 6.0;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -809,14 +827,6 @@
 				minimumVersion = 2.0.0;
 			};
 		};
-		AFEC19AF2D115D9200404D42 /* XCRemoteSwiftPackageReference "SwiftLint" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/realm/SwiftLint.git";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.57.1;
-			};
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -834,11 +844,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = AF4C15B62D23E62C00AAA005 /* XCRemoteSwiftPackageReference "Factory" */;
 			productName = Factory;
-		};
-		AFEC19B02D115DA100404D42 /* SwiftLintBuildToolPlugin */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = AFEC19AF2D115D9200404D42 /* XCRemoteSwiftPackageReference "SwiftLint" */;
-			productName = "plugin:SwiftLintBuildToolPlugin";
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

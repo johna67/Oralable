@@ -8,8 +8,4 @@ disabled_rules:
   - trailing_comma
   - function_parameter_count
   - file_length
-#  - opening_brace
-#  - blanket_disable_command
-excluded:
-  - yoganidra/Generated
-  - yoganidra/PopulateDatabase.swift
+#excluded:
