@@ -25,14 +25,10 @@ struct ConnectionIndicatorView: View {
             
             Circle()
                 .fill(connected ? Color.approve : Color.gray)
-                .frame(width: 10, height: 10) // Fixed center circle
+                .frame(width: 10, height: 10)
         }
         .onChange(of: connected) {
-            if connected {
-                ripple = true
-            } else {
-                ripple = false
-            }
+            ripple = connected
         }
     }
 }

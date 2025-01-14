@@ -18,6 +18,7 @@ protocol DeviceService {
     var temperature: AsyncStream<Double> { get }
     var accelerometer: AsyncStream<AccelerometerFrame> { get }
 
+    @MainActor
     func start() async throws
 }
 
@@ -49,7 +50,7 @@ struct AccelerometerFrame {
     let maxSample: AccelerometerSample
 }
 
-class TGMService: DeviceService {
+final class TGMService: DeviceService {
     let type: DeviceType = .tgm
     let name = "TGM"
 
@@ -136,10 +137,6 @@ class TGMService: DeviceService {
                 Log.info("Skipping characteristic \(characteristic.uuid)")
             }
         }
-
-        Log.info("Testing if data can be read from TGM")
-
-        try await parseBatteryData(readData(for: batteryCharacteristic))
 
         Log.info("Started TGM device successfully.")
     }

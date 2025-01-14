@@ -12,6 +12,8 @@ struct ChartView: View {
     @State private var startTimeInterval = TimeInterval()
     @State private var data = [MeasurementData]()
     let measurementType: MeasurementType
+    let lowerThreshold = 0.0
+    let upperThreshold = 300000.0
 
     private enum ChartRange: String, CaseIterable, Identifiable {
         case day = "Day"
@@ -81,7 +83,7 @@ struct ChartView: View {
             .padding()
             chart
                 .padding()
-                .onAppear() {
+                .onAppear {
                     data = {
                         switch measurementType {
                         case .muscleActivityMagnitude:
@@ -103,15 +105,27 @@ struct ChartView: View {
 //                    x: .value("Date", measurement.date),
 //                    y: .value("Value", measurement.value)
 //                )
-//            }
+//                BarMark(
+//                    x: .value("Time", measurement.date, unit: .minute), // Use daily bins
+//                    y: .value("Out of Range Count", measurement.value < lowerThreshold || measurement.value > upperThreshold ? 1 : 0)
+//                    )
+                
+                ForEach(groupedData, id: \.0) { binStart, count in
+                                BarMark(
+                                    x: .value("Time Bin", binStart),
+                                    y: .value("Out of Range Count", count)
+                                )
+                                .foregroundStyle(Color.blue)
+                            }
+    //        }
 
-             PointPlot(data, x: .value("Date", \.date), y: .value("Value", \.value))
+//             PointPlot(data, x: .value("Date", \.date), y: .value("Value", \.value))
         }
         .foregroundStyle(.tint.opacity(0.2))
         .chartScrollableAxes(.horizontal)
         .chartScrollTargetBehavior(targetBehavior)
         .chartScrollPosition(initialX: scrollPosition)
-        .chartYAxis(.hidden)
+        //.chartYAxis(.hidden)
         .chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end, range: .plotDimension(padding: 10))
         .chartXAxis {
             switch selectedRange {
@@ -175,6 +189,28 @@ struct ChartView: View {
             }
         }
     }
+    
+    private var groupedData: [(Date, Int)] {
+            let calendar = Calendar.current
+            var bins: [Date: Int] = [:]
+
+            for measurement in data {
+                // Find the start of the bin (round down to the nearest 10 minutes)
+                let binStart = calendar.date(
+                    bySetting: .minute,
+                    value: (calendar.component(.minute, from: measurement.date) / 10) * 10,
+                    of: measurement.date
+                ) ?? measurement.date
+
+                // Increment the count if the value is outside the threshold range
+                if measurement.value < lowerThreshold || measurement.value > upperThreshold {
+                    bins[binStart, default: 0] += 1
+                }
+            }
+
+            // Convert dictionary to sorted array
+            return bins.sorted { $0.key < $1.key }
+        }
 }
 
 #Preview {

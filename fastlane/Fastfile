@@ -1,0 +1,30 @@
+default_platform(:ios)
+
+platform :ios do
+  lane :release do
+    ensure_git_branch(branch: 'main')
+    ensure_git_status_clean
+
+    increment_build_number(
+     xcodeproj: "Oralable.xcodeproj",
+     skip_info_plist: true)
+    
+    commit_version_bump(force: true)
+
+    push_to_git_remote
+
+    add_git_tag(includes_lane: false)
+
+    push_git_tags
+
+    clean_build_artifacts
+
+    gym(scheme: "Oralable")
+
+    deliver(
+      force: true,
+      skip_metadata: true,
+      skip_screenshots: true,
+      run_precheck_before_submit: false)
+  end
+end

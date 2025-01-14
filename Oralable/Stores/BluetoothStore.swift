@@ -38,7 +38,7 @@ import LogKit
                 await bluetoothAuthorization.authorize()
             }
             
-            bluetooth.$device.sink { device in
+            bluetooth.devicePublisher.sink { device in
                 if let device {
                     self.status = .connected
                     self.subscribe(device)
@@ -47,7 +47,7 @@ import LogKit
                 }
             }.store(in: &cancellables)
 
-            bluetooth.$pairedDevice.sink { pairedDevice in
+            bluetooth.pairedDevicePublisher.sink { pairedDevice in
                 self.pairedDevice = pairedDevice
             }.store(in: &cancellables)
 
@@ -61,10 +61,7 @@ import LogKit
     }
 
     func addDevice(_ type: DeviceType) async {
-        guard bluetooth.device?.type != type else {
-            Log.info("Device already added")
-            return
-        }
+        guard status != .connected else { return }
 
         do {
             status = .connecting

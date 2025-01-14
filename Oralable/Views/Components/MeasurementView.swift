@@ -11,15 +11,20 @@ struct MeasurementView: View {
 
     @Environment(MeasurementStore.self) private var measurements
     @Environment(BluetoothStore.self) private var bluetooth
+    
+    private let historySeconds = 30.0
 
     private var data: [MeasurementData] {
+        let now = Date()
         switch measurementType {
         case .muscleActivityMagnitude:
-            measurements.muscleActivityMagnitude.suffix(60)
+            return Array(measurements.muscleActivityMagnitude.suffix {
+                $0.date >= now.addingTimeInterval(-historySeconds)
+            })
         case .movement:
-            measurements.movement.suffix(60)
+            return measurements.movement.suffix(60)
         default:
-            []
+            return []
         }
     }
 
@@ -47,7 +52,7 @@ struct MeasurementView: View {
     }
     
     private var currentRangeInterval: DateInterval {
-        DateInterval(start: Calendar.current.date(byAdding: .minute, value: -1, to: Date())!, end: Date())
+        DateInterval(start: Calendar.current.date(byAdding: .second, value: -30, to: Date())!, end: Date())
     }
 
     var body: some View {
@@ -99,6 +104,7 @@ struct MeasurementView: View {
                     x: .value("Date", measurement.date),
                     y: .value("Value", measurement.value)
                 )
+                .interpolationMethod(.catmullRom)
             }
 //            RectangleMark(
 //                xStart: .value("Date", data[data.count - 20].date),
@@ -119,10 +125,22 @@ struct MeasurementView: View {
 
 #Preview {
     ScrollView {
-        MeasurementView(measurementType: .temperature)
+        MeasurementView(measurementType: .muscleActivityMagnitude)
             .environment(MeasurementStore())
             .environment(BluetoothStore())
             // .frame(height: 150)
             .padding()
+    }
+}
+
+extension Collection where Index == Int {
+    func suffix(while predicate: (Element) -> Bool) -> SubSequence {
+        guard !isEmpty else { return self[startIndex..<startIndex] }
+
+        var index = endIndex - 1
+        while index >= startIndex && predicate(self[index]) {
+            index -= 1
+        }
+        return self[(index + 1)..<endIndex]
     }
 }

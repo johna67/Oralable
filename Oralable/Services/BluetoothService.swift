@@ -16,9 +16,26 @@ struct BluetoothServiceError: Error, CustomStringConvertible {
 }
 
 @MainActor
-class BluetoothService {
-    @Published public var pairedDevice: DeviceDescriptor?
-    @Published public var device: DeviceService?
+protocol BluetoothService {
+    var devicePublisher: AnyPublisher<DeviceService?, Never> { get }
+    var pairedDevicePublisher: AnyPublisher<DeviceDescriptor?, Never> { get }
+    func start() async throws
+    func detectDevice(type: DeviceType) async throws
+    func disconnectDevice() async throws
+    func pair(type: DeviceType) async throws
+}
+
+final class LiveBluetoothService: BluetoothService {
+    @Published private var pairedDevice: DeviceDescriptor?
+    @Published private var device: DeviceService?
+    
+    var devicePublisher: AnyPublisher<(any DeviceService)?, Never> {
+        $device.eraseToAnyPublisher()
+    }
+    
+    var pairedDevicePublisher: AnyPublisher<DeviceDescriptor?, Never> {
+        $pairedDevice.eraseToAnyPublisher()
+    }
     
     private var manager: CentralManager?
     private var cancellables = Set<AnyCancellable>()
@@ -29,7 +46,7 @@ class BluetoothService {
     private var supportedDevices: [DeviceDescriptor] = [DeviceDescriptor(type: .tgm, peripheralId: UUID(), serviceIds: [UUID(uuidString: "3A0FF000-98C4-46B2-94AF-1AEE0FD4C48E")!])]
     
     init() {
-        pairedDevice = BluetoothService.getPersistedPairedDevice()
+        pairedDevice = LiveBluetoothService.getPersistedPairedDevice()
     }
     
     private static func persistPairedDevice(_ device: DeviceDescriptor?) {
@@ -49,7 +66,7 @@ class BluetoothService {
         
         try await device?.start()
         let deviceDescriptor = DeviceDescriptor(type: type, peripheralId: peripheral.identifier, serviceIds: [])
-        BluetoothService.persistPairedDevice(deviceDescriptor)
+        LiveBluetoothService.persistPairedDevice(deviceDescriptor)
         pairedDevice = deviceDescriptor
     }
     
@@ -97,7 +114,7 @@ class BluetoothService {
 
         var type: DeviceType?
 
-        if let paired = BluetoothService.getPersistedPairedDevice() {
+        if let paired = LiveBluetoothService.getPersistedPairedDevice() {
             type = paired.type
             peripheral = manager.retrievePeripherals(withIdentifiers: [paired.peripheralId]).first
         }
@@ -153,7 +170,7 @@ class BluetoothService {
             return
         }
 
-        guard let type = BluetoothService.getPersistedPairedDevice()?.type else {
+        guard let type = LiveBluetoothService.getPersistedPairedDevice()?.type else {
             Log.error("No device type found")
             return
         }
@@ -175,7 +192,7 @@ class BluetoothService {
         self.peripheral = peripheral
 
         do {
-            if let paired = BluetoothService.getPersistedPairedDevice() {
+            if let paired = LiveBluetoothService.getPersistedPairedDevice() {
                 Log.info("Found persisted device \(paired), connecting")
                 try await connect(peripheral, type: paired.type)
             } else {
@@ -195,7 +212,7 @@ class BluetoothService {
 
     private func unpair() {
         Log.warn("Device unpaired, removing from preferences")
-        BluetoothService.persistPairedDevice(nil)
+        LiveBluetoothService.persistPairedDevice(nil)
         pairedDevice = nil
         device = nil
     }

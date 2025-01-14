@@ -21,50 +21,10 @@ private actor PersistenceWorker {
     }
 }
 
-// class MeasurementSummarizer {
-//    private var currentMinute: SummaryData?
-//    private var summary = [SummaryData]()
-//    private let range: Range<Double>
-//
-//    init(range: Range<Double>) {
-//        self.range = range
-//    }
-//
-//    func addMeasurement(_ measurement: MeasurementData) -> [SummaryData] {
-//        let value = measurement.value
-//        let timestamp = measurement.date
-//        let currentMinuteStart = floorToMinute(timestamp)
-//        if currentMinute == nil {
-//            currentMinute = SummaryData(date: currentMinuteStart, value: 0)
-//        }
-//
-//        // Finalize the current minute if it has changed
-//        if let current = currentMinute, current.date != currentMinuteStart {
-//            summary.append(SummaryData(date: current.date, value: current.value))
-//            currentMinute = nil
-//        }
-//
-//        // Add the new measurement to the current minute
-//        if !range.contains(value) {
-//            currentMinute?.value += 1
-//        }
-//
-//        return summary
-//    }
-//
-//    private func floorToMinute(_ date: Date) -> Date {
-//        let calendar = Calendar.current
-//        return calendar.dateInterval(of: .minute, for: date)?.start ?? date
-//    }
-// }
-
 @MainActor
 @Observable final class MeasurementStore {
     var muscleActivityMagnitude = [MeasurementData]()
     var movement = [MeasurementData]()
-
-//    var muscleActivityMagnitudeSummary = [SummaryData]()
-//    var movementSummary = [SummaryData]()
 
     private var cancellables = Set<AnyCancellable>()
     private var ppgTask: Task<Void, Never>?
@@ -90,16 +50,8 @@ private actor PersistenceWorker {
     init() {
         muscleActivityMagnitude = persistence.readPPGFrames(limit: nil).map { convert($0) }
         movement = persistence.readAccelerometerFrames(limit: nil).map { convert($0) }
-
-//        for frames in muscleActivityMagnitude {
-//            muscleActivityMagnitudeSummary = muscleActivitySummarizer.addMeasurement(frames)
-//        }
-//
-//        for frames in movement {
-//            movementSummary = movementSummarizer.addMeasurement(frames)
-//        }
-
-        bluetooth.$device.sink { device in
+        
+        bluetooth.devicePublisher.sink { device in
             if let device {
                 self.subscribe(device)
             }
@@ -120,15 +72,8 @@ private actor PersistenceWorker {
             try jsonData.write(to: fileURL)
             return fileURL
         } catch {
-            print("Error saving combined data to file: \(error)")
+            Log.error("Error saving combined data to file: \(error)")
             return nil
-        }
-    }
-
-    private func appendAndLimit(_ element: MeasurementData, to array: inout [MeasurementData]) {
-        array.append(element)
-        if array.count > maxRawDataCount {
-            array.removeFirst()
         }
     }
 
@@ -139,8 +84,6 @@ private actor PersistenceWorker {
             for await ppg in device.ppg {
                 let measurement = convert(ppg)
                 muscleActivityMagnitude.append(measurement)
-                //appendAndLimit(convert(ppg), to: &muscleActivityMagnitude)
-//                processMeasurement(frame: ppg, range: muscleActivityMagnitudeRange, currentMinute: &currentMuscleActivityMinute, summary: &muscleActivityMagnitudeSummary)
                 Task {
                     await persistenceWorker.writePPGFrame(ppg)
                 }
@@ -150,10 +93,7 @@ private actor PersistenceWorker {
         accelerometerTask = Task {
             for await accelerometer in device.accelerometer {
                 let measurement = convert(accelerometer)
-
-                appendAndLimit(measurement, to: &movement)
-//                movementSummary = movementSummarizer.addMeasurement(measurement)
-                // processMeasurement(frame: accelerometer, range: movementRange, currentMinute: &currentMovementMinute, summary: &movementSummary)
+                movement.append(measurement)
                 Task {
                     await persistenceWorker.writeAccelerometerFrame(accelerometer)
                 }

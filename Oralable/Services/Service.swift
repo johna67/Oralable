@@ -8,7 +8,7 @@ import Foundation
 
 extension Container {
     var bluetoothService: Factory<BluetoothService> {
-        Factory(self) { @MainActor in BluetoothService() }
+        Factory(self) { @MainActor in LiveBluetoothService() }
             .singleton
     }
     
@@ -21,4 +21,16 @@ extension Container {
         Factory(self) { @MainActor in SwiftDataPersistence() }
             .singleton
     }
+}
+
+extension Container: @retroactive AutoRegistering {
+    public func autoRegister() {
+        bluetoothService.context(.preview) {
+            MockBluetoothService()
+        }
+        
+        persistenceService.context(.preview) {
+            MockPersistenceService()
+        }
+     }
 }

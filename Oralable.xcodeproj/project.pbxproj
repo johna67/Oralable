@@ -28,6 +28,9 @@
 		AF8F42A52D253CAE00D7B2FD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8F42A42D253CAE00D7B2FD /* Button.swift */; };
 		AF8F42A72D2692E400D7B2FD /* PersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */; };
 		AFDEE06D2D33E0AE00C02397 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = AFDEE06C2D33E0AE00C02397 /* .swiftlint.yml */; };
+		AFDEE0702D34EF6700C02397 /* MockPersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDEE06F2D34EF6700C02397 /* MockPersistenceService.swift */; };
+		AFDEE0722D34F4A600C02397 /* MockDeviceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDEE0712D34F4A600C02397 /* MockDeviceService.swift */; };
+		AFDEE0742D34F74300C02397 /* MockBluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFDEE0732D34F74300C02397 /* MockBluetoothService.swift */; };
 		AFEC199F2D102A0100404D42 /* SplashView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC199E2D102A0100404D42 /* SplashView.swift */; };
 		AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A22D102D3C00404D42 /* HomeView.swift */; };
 		AFEC19A72D102F8400404D42 /* TextStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFEC19A62D102F8400404D42 /* TextStyle.swift */; };
@@ -85,6 +88,9 @@
 		AF8F42A42D253CAE00D7B2FD /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceService.swift; sourceTree = "<group>"; };
 		AFDEE06C2D33E0AE00C02397 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
+		AFDEE06F2D34EF6700C02397 /* MockPersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockPersistenceService.swift; sourceTree = "<group>"; };
+		AFDEE0712D34F4A600C02397 /* MockDeviceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockDeviceService.swift; sourceTree = "<group>"; };
+		AFDEE0732D34F74300C02397 /* MockBluetoothService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MockBluetoothService.swift; sourceTree = "<group>"; };
 		AFEC199E2D102A0100404D42 /* SplashView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplashView.swift; sourceTree = "<group>"; };
 		AFEC19A22D102D3C00404D42 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
 		AFEC19A62D102F8400404D42 /* TextStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TextStyle.swift; sourceTree = "<group>"; };
@@ -163,7 +169,6 @@
 				AF4C15B12D1D76F700AAA005 /* Timeout.swift */,
 				44A79D662C9049A000BD84DD /* Assets.xcassets */,
 				44A79D682C9049A000BD84DD /* Preview Content */,
-				AFEC19A62D102F8400404D42 /* TextStyle.swift */,
 				AFEC19BB2D116F1C00404D42 /* AppMetadata.swift */,
 				AFEC19BD2D116FC800404D42 /* Extensions.swift */,
 				AFEC19D22D12C12F00404D42 /* Models.swift */,
@@ -213,6 +218,16 @@
 			path = Stores;
 			sourceTree = "<group>";
 		};
+		AFDEE06E2D34EF4800C02397 /* Mock */ = {
+			isa = PBXGroup;
+			children = (
+				AFDEE06F2D34EF6700C02397 /* MockPersistenceService.swift */,
+				AFDEE0712D34F4A600C02397 /* MockDeviceService.swift */,
+				AFDEE0732D34F74300C02397 /* MockBluetoothService.swift */,
+			);
+			path = Mock;
+			sourceTree = "<group>";
+		};
 		AFEC19B82D116F0100404D42 /* ActivityView */ = {
 			isa = PBXGroup;
 			children = (
@@ -227,6 +242,7 @@
 			children = (
 				AFEC19C42D11882200404D42 /* MeasurementView.swift */,
 				AF677A262D312E0A00CDACE3 /* ConnectionIndicatorView.swift */,
+				AFEC19A62D102F8400404D42 /* TextStyle.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -234,6 +250,7 @@
 		AFEC19CA2D12BE7000404D42 /* Services */ = {
 			isa = PBXGroup;
 			children = (
+				AFDEE06E2D34EF4800C02397 /* Mock */,
 				AF4C15A72D1D6D4E00AAA005 /* BluetoothService.swift */,
 				AF4C15AC2D1D6E5300AAA005 /* DeviceService.swift */,
 				AF4C15B92D23E66200AAA005 /* Service.swift */,
@@ -451,13 +468,16 @@
 				AFEC19C02D1170BA00404D42 /* WebView.swift in Sources */,
 				AFEC19B52D116E9C00404D42 /* AboutView.swift in Sources */,
 				AFEC19BC2D116F1C00404D42 /* AppMetadata.swift in Sources */,
+				AFDEE0742D34F74300C02397 /* MockBluetoothService.swift in Sources */,
 				AFEC19C92D12B12700404D42 /* ChartView.swift in Sources */,
 				AFEC19C52D11882200404D42 /* MeasurementView.swift in Sources */,
 				AF8F42A52D253CAE00D7B2FD /* Button.swift in Sources */,
+				AFDEE0702D34EF6700C02397 /* MockPersistenceService.swift in Sources */,
 				AFEC19CD2D12BF8E00404D42 /* MeasurementStore.swift in Sources */,
 				AF677A272D312E0A00CDACE3 /* ConnectionIndicatorView.swift in Sources */,
 				AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */,
 				AF677A252D2FAEB500CDACE3 /* BluetoothRestoreService.swift in Sources */,
+				AFDEE0722D34F4A600C02397 /* MockDeviceService.swift in Sources */,
 				AF8F42A72D2692E400D7B2FD /* PersistenceService.swift in Sources */,
 				44A79D632C90499E00BD84DD /* OralableApp.swift in Sources */,
 				AF677A212D2F6E7400CDACE3 /* BluetoothStore.swift in Sources */,
