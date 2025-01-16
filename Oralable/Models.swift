@@ -10,6 +10,9 @@ public protocol Model: Hashable, Codable {}
 struct MeasurementData: Model {
     let date: Date
     let value: Double
+    let belowThreshold: Bool
+    let aboveThreshold: Bool
+    let calibrated: Bool
 }
 
 struct SummaryData: Model {
@@ -77,3 +80,4 @@ struct DeviceDescriptor: Model {
     let peripheralId: UUID
     let serviceIds: [UUID]
 }
+

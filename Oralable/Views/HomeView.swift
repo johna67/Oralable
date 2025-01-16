@@ -45,22 +45,17 @@ struct HomeView: View {
                     .padding(.bottom)
                 ScrollView {
                     VStack(spacing: 20) {
-                        NavigationLink(value: MeasurementType.muscleActivityMagnitude) {
+                        if measurements.muscleActivityNormalRange != nil {
+                            NavigationLink(value: MeasurementType.muscleActivityMagnitude) {
+                                MeasurementView(measurementType: .muscleActivityMagnitude)
+                            }
+                        } else {
                             MeasurementView(measurementType: .muscleActivityMagnitude)
                         }
 
                         NavigationLink(value: MeasurementType.movement) {
                             MeasurementView(measurementType: .movement)
                         }
-//                        NavigationLink(value: Measurements.Category.heartRate) {
-//                            MeasurementView(measurementCategory: Measurements.Category.heartRate)
-//                        }
-//                        NavigationLink(value: Measurements.Category.muscleActivity) {
-//                            MeasurementView(measurementCategory: Measurements.Category.muscleActivity)
-//                        }
-//                        NavigationLink(value: Measurements.Category.temperature) {
-//                            MeasurementView(measurementCategory: Measurements.Category.temperature)
-//                        }
                     }
                 }
                 .navigationDestination(for: MeasurementType.self) { type in
@@ -69,6 +64,7 @@ struct HomeView: View {
                 Spacer()
             }
             .padding()
+            .background(Color.background)
         }
     }
 }

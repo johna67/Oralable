@@ -6,14 +6,54 @@
 import Charts
 import SwiftUI
 
+//struct ProcessedData: Hashable {
+//    let date: Date
+//    var range: ClosedRange<Double>?
+//    var aboveThresholdRange: ClosedRange<Double>?
+//    var belowThresholdRange: ClosedRange<Double>?
+//}
+
+struct CountMeasurementData: Hashable {
+    let count: Int
+    let date: Date
+}
+
+struct AggregatedData: Hashable {
+    let date: Date
+    var min: Double
+    var max: Double
+    var avg: Double
+    var count: Int
+}
+
 struct ChartView: View {
     @Environment(MeasurementStore.self) var measurements: MeasurementStore
     @State private var selectedRange: ChartRange = .day
     @State private var startTimeInterval = TimeInterval()
-    @State private var data = [MeasurementData]()
+
     let measurementType: MeasurementType
     let lowerThreshold = 0.0
     let upperThreshold = 300000.0
+    //@State private var processedData = [ProcessedData]()
+
+    @State private var dailyCountData = [CountMeasurementData]()
+    @State private var weeklyCountData = [CountMeasurementData]()
+    @State private var monthlyCountData = [CountMeasurementData]()
+    
+    @State private var dailyAggregatedData = [AggregatedData]()
+    @State private var weeklyAggregatedData = [AggregatedData]()
+    @State private var monthlyAggregatedData = [AggregatedData]()
+    
+    private var data: [MeasurementData] {
+        switch measurementType {
+        case .muscleActivityMagnitude:
+            measurements.muscleActivityMagnitude
+        case .movement:
+            measurements.movement
+        default:
+            []
+        }
+    }
 
     private enum ChartRange: String, CaseIterable, Identifiable {
         case day = "Day"
@@ -21,6 +61,28 @@ struct ChartView: View {
         case month = "Month"
 
         var id: String { rawValue }
+    }
+    
+    private var countData: [CountMeasurementData] {
+        switch selectedRange {
+        case .day:
+            dailyCountData
+        case .week:
+            weeklyCountData
+        case .month:
+            monthlyCountData
+        }
+    }
+    
+    private var aggregatedData: [AggregatedData] {
+        switch selectedRange {
+        case .day:
+            dailyAggregatedData
+        case .week:
+            weeklyAggregatedData
+        case .month:
+            monthlyAggregatedData
+        }
     }
 
     private var targetBehavior: ValueAlignedChartScrollTargetBehavior {
@@ -32,23 +94,25 @@ struct ChartView: View {
     }
 
     private var yDomain: ClosedRange<Double> {
-        let min = data.min { point1, point2 in
-            point1.value < point2.value
+        if measurementType == .movement {
+            guard let range = aggregatedData.range(by: { a, b in
+                a.avg < b.avg
+            }) else {
+                return 0...0
+            }
+            return (range.min.avg / 1.1)...(range.max.avg * 1.1)
+        } else {
+            guard let range = countData.max(by: { $0.count < $1.count }) else {
+                return 0...0
+            }
+            return 0...Double(range.count) * 1.1
         }
-
-        let max = data.min { point1, point2 in
-            point1.value > point2.value
-        }
-
-        guard let min, let max else { return 0 ... 0 }
-        return min.value ... max.value
     }
 
     private var currentRangeInterval: DateInterval {
         let calendar = Calendar.current
         let now = Date()
         let firstDate = data.first?.date ?? now
-        let distance = firstDate.distance(to: Date())
         
         switch selectedRange {
         case .day:
@@ -83,49 +147,47 @@ struct ChartView: View {
             .padding()
             chart
                 .padding()
-                .onAppear {
-                    data = {
-                        switch measurementType {
-                        case .muscleActivityMagnitude:
-                            measurements.muscleActivityMagnitude
-                        case .movement:
-                            measurements.movement
-                        default:
-                            []
-                        }
-                    }()
-                }
+        }
+        .background(Color.background)
+        .onAppear {
+            UISegmentedControl.appearance().selectedSegmentTintColor = .background
+            UISegmentedControl.appearance().backgroundColor = .surface
+
+            if measurementType == .muscleActivityMagnitude {
+                dailyCountData = countMeasurementsOutsideThreshold(data, granularity: 3600.0)
+                weeklyCountData = countMeasurementsOutsideThreshold(data, granularity: 8 * 3600.0)
+                monthlyCountData = countMeasurementsOutsideThreshold(data, granularity: 24 * 3600.0)
+            } else {
+                dailyAggregatedData = minMaxSampling(data, granularity: 10 * 60.0)
+                weeklyAggregatedData = minMaxSampling(data, granularity: 3600.0)
+                monthlyAggregatedData = minMaxSampling(data, granularity: 4 * 3600.0)
+            }
         }
     }
 
     private var chart: some View {
-        Chart {
- //           ForEach(data, id: \.self) { measurement in
-//                PointMark(
-//                    x: .value("Date", measurement.date),
-//                    y: .value("Value", measurement.value)
-//                )
-//                BarMark(
-//                    x: .value("Time", measurement.date, unit: .minute), // Use daily bins
-//                    y: .value("Out of Range Count", measurement.value < lowerThreshold || measurement.value > upperThreshold ? 1 : 0)
-//                    )
-                
-                ForEach(groupedData, id: \.0) { binStart, count in
-                                BarMark(
-                                    x: .value("Time Bin", binStart),
-                                    y: .value("Out of Range Count", count)
-                                )
-                                .foregroundStyle(Color.blue)
-                            }
-    //        }
-
-//             PointPlot(data, x: .value("Date", \.date), y: .value("Value", \.value))
+        Group {
+            if measurementType == .movement {
+                Chart(aggregatedData, id: \.self) { data in
+                    LineMark(x: .value("", data.date), y: .value("", data.avg))
+                        .interpolationMethod(.monotone)
+                        .foregroundStyle(Color.approve)
+                }
+            } else {
+                Chart {
+                    ForEach(countData, id: \.self) { data in
+                        BarMark(x: .value("", data.date), y: .value("", data.count), width: 24)
+                            .clipShape(.capsule)
+                            .foregroundStyle(Color.accent)
+                    }
+                }
+            }
         }
-        .foregroundStyle(.tint.opacity(0.2))
         .chartScrollableAxes(.horizontal)
         .chartScrollTargetBehavior(targetBehavior)
         .chartScrollPosition(initialX: scrollPosition)
-        //.chartYAxis(.hidden)
+        .chartYAxis(measurementType == .movement ? .hidden : .visible)
+        .chartYScale(domain: yDomain)
         .chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end, range: .plotDimension(padding: 10))
         .chartXAxis {
             switch selectedRange {
@@ -189,31 +251,100 @@ struct ChartView: View {
             }
         }
     }
+                        
+//    private func processMeasurementData(_ data: [MeasurementData], granularity: TimeInterval) -> [ProcessedData] {
+//        guard !data.isEmpty else { return [] }
+//        
+//        func extendRange(_ range: ClosedRange<Double>?, with value: Double) -> ClosedRange<Double> {
+//            guard let range else {
+//                return value...value
+//            }
+//            return min(range.lowerBound, value)...max(range.upperBound, value)
+//        }
+//        
+//        var results = [ProcessedData]()
+//        
+//        for measurement in data where measurement.calibrated {
+//            let groupDate = Date(timeIntervalSince1970: floor(measurement.date.timeIntervalSince1970 / granularity) * granularity)
+//            
+//            if let lastResult = results.last, lastResult.date == groupDate {
+//                var updatedLastResult = lastResult
+//                
+//                if measurement.aboveThreshold {
+//                    updatedLastResult.aboveThresholdRange = extendRange(updatedLastResult.aboveThresholdRange, with: measurement.value)
+//                } else if measurement.belowThreshold {
+//                    updatedLastResult.belowThresholdRange = extendRange(updatedLastResult.belowThresholdRange, with: measurement.value)
+//                } else {
+//                    updatedLastResult.range = extendRange(updatedLastResult.range, with: measurement.value)
+//                }
+//                
+//                results[results.count - 1] = updatedLastResult
+//            } else {
+//                let measurementRange = (measurement.value...measurement.value)
+//                let range = measurement.aboveThreshold || measurement.belowThreshold ? nil : measurementRange
+//                let aboveThresholdRange = measurement.aboveThreshold ? measurementRange : nil
+//                let belowThresholdRange = measurement.belowThreshold ? measurementRange : nil
+//                
+//                results.append(.init(date: groupDate, range: range, aboveThresholdRange: aboveThresholdRange, belowThresholdRange: belowThresholdRange))
+//            }
+//        }
+//        
+//        return results
+//    }
     
-    private var groupedData: [(Date, Int)] {
-            let calendar = Calendar.current
-            var bins: [Date: Int] = [:]
-
-            for measurement in data {
-                // Find the start of the bin (round down to the nearest 10 minutes)
-                let binStart = calendar.date(
-                    bySetting: .minute,
-                    value: (calendar.component(.minute, from: measurement.date) / 10) * 10,
-                    of: measurement.date
-                ) ?? measurement.date
-
-                // Increment the count if the value is outside the threshold range
-                if measurement.value < lowerThreshold || measurement.value > upperThreshold {
-                    bins[binStart, default: 0] += 1
+    private func countMeasurementsOutsideThreshold(_ data: [MeasurementData], granularity: TimeInterval) -> [CountMeasurementData] {
+        guard !data.isEmpty else { return [] }
+        guard let threshold = measurements.muscleActivityNormalRange else { return [] }
+        
+        var result: [CountMeasurementData] = []
+        
+        for measurement in data {
+            let groupDate = Date(timeIntervalSince1970: floor(measurement.date.timeIntervalSince1970 / granularity) * granularity)
+            
+            if let last = result.last, last.date == groupDate {
+                if !(threshold ~= measurement.value) {
+                    result[result.count - 1] = .init(count: last.count + 1, date: groupDate)
                 }
+            } else {
+                let initialCount = threshold ~= measurement.value ? 0 : 1
+                result.append(CountMeasurementData(count: initialCount, date: groupDate))
             }
-
-            // Convert dictionary to sorted array
-            return bins.sorted { $0.key < $1.key }
         }
+        
+        return result
+    }
+    
+    private func minMaxSampling(_ data: [MeasurementData], granularity: TimeInterval) -> [AggregatedData] {
+        guard !data.isEmpty else { return [] }
+        
+        var results: [AggregatedData] = []
+        
+        for measurement in data {
+            let bucketDate = Date(timeIntervalSince1970: floor(measurement.date.timeIntervalSince1970 / granularity) * granularity)
+            
+            if let lastResult = results.last, lastResult.date == bucketDate {
+                var updatedLastResult = lastResult
+                updatedLastResult.min = min(lastResult.min, measurement.value)
+                updatedLastResult.max = max(lastResult.max, measurement.value)
+                updatedLastResult.count += 1
+                updatedLastResult.avg = (lastResult.avg * Double(lastResult.count - 1) + measurement.value) / Double(updatedLastResult.count)
+                results[results.count - 1] = updatedLastResult
+            } else {
+                results.append(AggregatedData(
+                    date: bucketDate,
+                    min: measurement.value,
+                    max: measurement.value,
+                    avg: measurement.value,
+                    count: 1
+                ))
+            }
+        }
+        
+        return results
+    }
 }
 
 #Preview {
-    ChartView(measurementType: .heartRate)
+    ChartView(measurementType: .muscleActivityMagnitude)
         .environment(MeasurementStore())
 }

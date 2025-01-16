@@ -89,3 +89,49 @@ extension Calendar {
         return self.date(from: components)!
     }
 }
+
+extension Collection {
+    func range() -> (min: Element, max: Element)? where Element: Comparable {
+        guard var minElement = self.first else { return nil }
+        var maxElement = minElement
+        
+        for element in self {
+            if element < minElement {
+                minElement = element
+            } else if maxElement < element {
+                maxElement = element
+            }
+        }
+        
+        return (min: minElement, max: maxElement)
+    }
+    
+    func range(by areInIncreasingOrder: (Element, Element) -> Bool) -> (min: Element, max: Element)? {
+        guard var minElement = self.first else { return nil }
+        var maxElement = minElement
+        
+        for element in self {
+            if areInIncreasingOrder(element, minElement) {
+                minElement = element
+            } else if areInIncreasingOrder(maxElement, element) {
+                maxElement = element
+            }
+        }
+        
+        return (min: minElement, max: maxElement)
+    }
+}
+
+extension BidirectionalCollection {
+    func suffix(while predicate: (Element) -> Bool) -> SubSequence {
+        var index = endIndex
+        while index > startIndex {
+            let previousIndex = self.index(before: index)
+            if !predicate(self[previousIndex]) {
+                break
+            }
+            index = previousIndex
+        }
+        return self[index..<endIndex]
+    }
+}

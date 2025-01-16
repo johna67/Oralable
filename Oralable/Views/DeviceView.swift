@@ -87,6 +87,7 @@ struct DeviceView: View {
             }
         }
         .padding()
+        .background(Color.background)
     }
 }
 

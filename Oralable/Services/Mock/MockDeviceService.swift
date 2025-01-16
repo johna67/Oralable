@@ -49,7 +49,7 @@ final class MockDeviceService: DeviceService {
                 if let ppgContinuation = self.ppgContinuation {
                     let isRandom = Int.random(in: 1...100) > 90 // 10% random IR
                     let irValue = isRandom
-                        ? Int32.random(in: 160000...3_500_000)
+                        ? Int32.random(in: 160_000...350_000)
                         : 160000
 
                     let ppgSample = PPGSample(red: 254115, ir: irValue, green: 265105)

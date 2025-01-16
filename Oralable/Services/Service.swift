@@ -32,5 +32,9 @@ extension Container: @retroactive AutoRegistering {
         persistenceService.context(.preview) {
             MockPersistenceService()
         }
+        
+        bluetoothService.context(.simulator) {
+            MockBluetoothService()
+        }
      }
 }

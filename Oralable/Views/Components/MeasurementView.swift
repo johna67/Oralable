@@ -12,6 +12,11 @@ struct MeasurementView: View {
     @Environment(MeasurementStore.self) private var measurements
     @Environment(BluetoothStore.self) private var bluetooth
     
+    @State private var chartColor: Color = .accent
+    
+    private enum Status {
+        case disconnected, live, calibrating
+    }
     private let historySeconds = 30.0
 
     private var data: [MeasurementData] {
@@ -22,14 +27,41 @@ struct MeasurementView: View {
                 $0.date >= now.addingTimeInterval(-historySeconds)
             })
         case .movement:
-            return measurements.movement.suffix(60)
+            return Array(measurements.movement.suffix {
+                $0.date >= now.addingTimeInterval(-historySeconds)
+            })
         default:
             return []
         }
     }
 
     private var measurementHidden: Bool {
-        measurementType == .muscleActivityMagnitude || measurementType == .movement
+        measurementType == .muscleActivityMagnitude || measurementType == .movement || measurementType == .muscleActivity
+    }
+    
+    private var status: Status {
+        if bluetooth.status == .connected {
+            if measurementType == .muscleActivityMagnitude || measurementType == .muscleActivity, measurements.muscleActivityNormalRange == nil {
+                return .calibrating
+            }
+            return .live
+        }
+        return .disconnected
+    }
+    
+    private var statusText: String {
+        switch status {
+        case .disconnected:
+            ""
+        case .live:
+            "Live"
+        case .calibrating:
+            "Calibrating"
+        }
+    }
+    
+    private var outsideRange: Bool {
+        data.last?.aboveThreshold ?? false
     }
 
     private var dateInterval: DateInterval {
@@ -52,7 +84,7 @@ struct MeasurementView: View {
     }
     
     private var currentRangeInterval: DateInterval {
-        DateInterval(start: Calendar.current.date(byAdding: .second, value: -30, to: Date())!, end: Date())
+        DateInterval(start: Calendar.current.date(byAdding: .second, value: Int(-historySeconds), to: Date())!, end: Date())
     }
 
     var body: some View {
@@ -85,7 +117,7 @@ struct MeasurementView: View {
             HStack {
                 ConnectionIndicatorView(connected: bluetooth.status == .connected)
                 if bluetooth.status == .connected {
-                    Text("Live")
+                    Text(statusText)
                         .textStyle(.body(bluetooth.status.statusColor))
                 }
                 
@@ -98,26 +130,16 @@ struct MeasurementView: View {
     }
 
     private var chart: some View {
-        Chart {
-            ForEach(data, id: \.self) { measurement in
-                LineMark(
-                    x: .value("Date", measurement.date),
-                    y: .value("Value", measurement.value)
-                )
-                .interpolationMethod(.catmullRom)
-            }
-//            RectangleMark(
-//                xStart: .value("Date", data[data.count - 20].date),
-//                xEnd: .value("Date", data[data.count - 5].date),
-//                yStart: .value("Value", 0),
-//                yEnd: .value("Value", 1000000)
-//            )
-//            .foregroundStyle(.blue.opacity(0.1))
+        Chart(data, id: \.date) {
+            LineMark(
+                x: .value("", $0.date),
+                y: .value("", $0.value)
+            )
+            .interpolationMethod(.monotone)
         }
-        .foregroundStyle(.tint)
-        .chartXVisibleDomain(length: 60)
-        //.chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end)
-        //.chartYScale(domain: yDomain)
+        .foregroundStyle(outsideRange ? Color.accent : Color.approve)
+        .chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end)
+        .chartYScale(domain: yDomain)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
     }
@@ -128,19 +150,11 @@ struct MeasurementView: View {
         MeasurementView(measurementType: .muscleActivityMagnitude)
             .environment(MeasurementStore())
             .environment(BluetoothStore())
-            // .frame(height: 150)
             .padding()
-    }
-}
-
-extension Collection where Index == Int {
-    func suffix(while predicate: (Element) -> Bool) -> SubSequence {
-        guard !isEmpty else { return self[startIndex..<startIndex] }
-
-        var index = endIndex - 1
-        while index >= startIndex && predicate(self[index]) {
-            index -= 1
-        }
-        return self[(index + 1)..<endIndex]
+        
+        MeasurementView(measurementType: .movement)
+            .environment(MeasurementStore())
+            .environment(BluetoothStore())
+            .padding()
     }
 }

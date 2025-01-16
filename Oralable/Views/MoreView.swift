@@ -106,7 +106,8 @@ struct MoreView: View {
                     .opacity(0.3)
                     .padding()
             }
-            // .scrollContentBackground(.hidden)
+            .scrollContentBackground(.hidden)
+            .background(Color.background)
         }
         // .navigationBarHidden(true)
     }
@@ -114,4 +115,5 @@ struct MoreView: View {
 
 #Preview {
     MoreView()
+        .environment(MeasurementStore())
 }

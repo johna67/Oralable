@@ -13,6 +13,7 @@
 		44A79D742C9049A000BD84DD /* OralableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D732C9049A000BD84DD /* OralableTests.swift */; };
 		44A79D7E2C9049A000BD84DD /* OralableUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D7D2C9049A000BD84DD /* OralableUITests.swift */; };
 		44A79D802C9049A000BD84DD /* OralableUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D7F2C9049A000BD84DD /* OralableUITestsLaunchTests.swift */; };
+		AF2B1CB62D37F7BD002624E4 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF2B1CB52D37F7BD002624E4 /* Test.swift */; };
 		AF4C15A82D1D6D4E00AAA005 /* BluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4C15A72D1D6D4E00AAA005 /* BluetoothService.swift */; };
 		AF4C15AB2D1D6DA500AAA005 /* AsyncBluetooth in Frameworks */ = {isa = PBXBuildFile; productRef = AF4C15AA2D1D6DA500AAA005 /* AsyncBluetooth */; };
 		AF4C15AD2D1D6E5300AAA005 /* DeviceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4C15AC2D1D6E5300AAA005 /* DeviceService.swift */; };
@@ -75,6 +76,7 @@
 		44A79D792C9049A000BD84DD /* OralableUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OralableUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		44A79D7D2C9049A000BD84DD /* OralableUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableUITests.swift; sourceTree = "<group>"; };
 		44A79D7F2C9049A000BD84DD /* OralableUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OralableUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		AF2B1CB52D37F7BD002624E4 /* Test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Test.swift; sourceTree = "<group>"; };
 		AF4C15A72D1D6D4E00AAA005 /* BluetoothService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothService.swift; sourceTree = "<group>"; };
 		AF4C15AC2D1D6E5300AAA005 /* DeviceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceService.swift; sourceTree = "<group>"; };
 		AF4C15B12D1D76F700AAA005 /* Timeout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Timeout.swift; sourceTree = "<group>"; };
@@ -274,6 +276,7 @@
 				AFEC19C12D11847700404D42 /* DeviceView.swift */,
 				AFEC19C82D12B12700404D42 /* ChartView.swift */,
 				AF8F42A42D253CAE00D7B2FD /* Button.swift */,
+				AF2B1CB52D37F7BD002624E4 /* Test.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -464,6 +467,7 @@
 				AF677A232D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift in Sources */,
 				AFEC19BA2D116F0100404D42 /* ActivityView.swift in Sources */,
 				AFEC19B32D116DD000404D42 /* MoreView.swift in Sources */,
+				AF2B1CB62D37F7BD002624E4 /* Test.swift in Sources */,
 				AFEC19C22D11847700404D42 /* DeviceView.swift in Sources */,
 				AFEC19C02D1170BA00404D42 /* WebView.swift in Sources */,
 				AFEC19B52D116E9C00404D42 /* AboutView.swift in Sources */,

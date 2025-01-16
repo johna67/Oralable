@@ -25,6 +25,8 @@ private actor PersistenceWorker {
 @Observable final class MeasurementStore {
     var muscleActivityMagnitude = [MeasurementData]()
     var movement = [MeasurementData]()
+    
+    var muscleActivityNormalRange: ClosedRange<Double>?
 
     private var cancellables = Set<AnyCancellable>()
     private var ppgTask: Task<Void, Never>?
@@ -33,16 +35,14 @@ private actor PersistenceWorker {
     private var subscribed = false
     private var persistenceWorker = PersistenceWorker()
 
-    private let maxRawDataCount = 500
+    private let ppgCalibrationFrameCount = 50
+    private var ppgFrameReceived = 0
 
     @ObservationIgnored
     @Injected(\.persistenceService) private var persistence
 
     @ObservationIgnored
     @Injected(\.bluetoothService) private var bluetooth
-
-    private let muscleActivityMagnitudeRange: Range<Double> = 100_000.0 ..< 150_000.0
-    private let movementRange: Range<Double> = 14000.0 ..< 18000.0
 
     private var currentMuscleActivityMinute: (date: Date, count: Int)?
     private var currentMovementMinute: (date: Date, count: Int)?
@@ -82,10 +82,20 @@ private actor PersistenceWorker {
         subscribed = true
         ppgTask = Task {
             for await ppg in device.ppg {
-                let measurement = convert(ppg)
+                let measurement = convert(ppg, threshold: muscleActivityNormalRange)
                 muscleActivityMagnitude.append(measurement)
+                
+                ppgFrameReceived += 1
+                if muscleActivityNormalRange == nil, ppgFrameReceived >= ppgCalibrationFrameCount,
+                    let range = muscleActivityMagnitude.suffix(ppgCalibrationFrameCount).range(by: { a, b in
+                        a.value < b.value
+                    }) {
+                    muscleActivityNormalRange = (range.min.value / 1.2)...(range.max.value * 1.2)
+                    }
                 Task {
-                    await persistenceWorker.writePPGFrame(ppg)
+                    if muscleActivityNormalRange != nil {
+                        await persistenceWorker.writePPGFrame(ppg)
+                    }
                 }
             }
         }
@@ -124,8 +134,11 @@ private actor PersistenceWorker {
         return calendar.dateInterval(of: .minute, for: date)?.start ?? date
     }
 
-    private func convert(_ frame: some MeasurementConvertible) -> MeasurementData {
-        .init(date: frame.timestamp, value: frame.value)
+    private func convert(_ frame: some MeasurementConvertible, threshold: ClosedRange<Double>? = nil) -> MeasurementData {
+        if let threshold {
+            return .init(date: frame.timestamp, value: frame.value, belowThreshold: frame.value < threshold.lowerBound, aboveThreshold: frame.value > threshold.upperBound, calibrated: true)
+        }
+        return .init(date: frame.timestamp, value: frame.value, belowThreshold: false, aboveThreshold: false, calibrated: false)
     }
 }
 
