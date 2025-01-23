@@ -21,20 +21,29 @@ extension Container {
         Factory(self) { @MainActor in SwiftDataPersistence() }
             .singleton
     }
+    
+    var authService: Factory<AuthenticationService> {
+        Factory(self) { @MainActor in LiveAuthenticationService() }
+            .singleton
+    }
+    
+    var healthKitService: Factory<HealthKitService> {
+        Factory(self) { @MainActor in LiveHealthKitService()}
+    }
 }
 
 extension Container: @retroactive AutoRegistering {
     public func autoRegister() {
-        bluetoothService.context(.preview) {
-            MockBluetoothService()
-        }
-        
-        persistenceService.context(.preview) {
+        persistenceService.context(.preview, .simulator) {
             MockPersistenceService()
         }
         
-        bluetoothService.context(.simulator) {
+        bluetoothService.context(.preview, .simulator) {
             MockBluetoothService()
+        }
+        
+        healthKitService.context(.preview, .simulator) {
+            MockHealthKitService()
         }
      }
 }

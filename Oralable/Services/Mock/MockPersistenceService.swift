@@ -6,6 +6,14 @@
 import Foundation
 
 final class MockPersistenceService: PersistenceService {
+    func readUser() -> User? {
+        User(firstName: "John", lastName: "Test", email: "john@test.com", height: 178.5, weight: 81.2)
+    }
+    
+    func writeUser(_ user: User) {
+        
+    }
+    
     private var accelerometerFrames: [AccelerometerFrame]
     private var ppgFrames: [PPGFrame]
         

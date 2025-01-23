@@ -26,6 +26,13 @@
 		AF677A232D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF677A222D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift */; };
 		AF677A252D2FAEB500CDACE3 /* BluetoothRestoreService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF677A242D2FAEB500CDACE3 /* BluetoothRestoreService.swift */; };
 		AF677A272D312E0A00CDACE3 /* ConnectionIndicatorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF677A262D312E0A00CDACE3 /* ConnectionIndicatorView.swift */; };
+		AF7A5A582D40A557001CC64C /* AuthenticationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7A5A572D40A557001CC64C /* AuthenticationService.swift */; };
+		AF7A5A5A2D40A5CC001CC64C /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7A5A592D40A5CC001CC64C /* LoginView.swift */; };
+		AF7A5A5C2D40A60C001CC64C /* UserStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7A5A5B2D40A60C001CC64C /* UserStore.swift */; };
+		AF7A5A5E2D40B269001CC64C /* Nonce.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7A5A5D2D40B269001CC64C /* Nonce.swift */; };
+		AF7A5A612D40BB2B001CC64C /* HealthKitService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7A5A602D40BB2B001CC64C /* HealthKitService.swift */; };
+		AF7A5A632D40BBC6001CC64C /* HealthKitAuthorizationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7A5A622D40BBC6001CC64C /* HealthKitAuthorizationService.swift */; };
+		AF7A5A652D4106D5001CC64C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7A5A642D4106D5001CC64C /* ContentView.swift */; };
 		AF8F42A52D253CAE00D7B2FD /* Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8F42A42D253CAE00D7B2FD /* Button.swift */; };
 		AF8F42A72D2692E400D7B2FD /* PersistenceService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */; };
 		AFDEE06D2D33E0AE00C02397 /* .swiftlint.yml in Resources */ = {isa = PBXBuildFile; fileRef = AFDEE06C2D33E0AE00C02397 /* .swiftlint.yml */; };
@@ -87,6 +94,14 @@
 		AF677A222D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothAuthorizationService.swift; sourceTree = "<group>"; };
 		AF677A242D2FAEB500CDACE3 /* BluetoothRestoreService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BluetoothRestoreService.swift; sourceTree = "<group>"; };
 		AF677A262D312E0A00CDACE3 /* ConnectionIndicatorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ConnectionIndicatorView.swift; sourceTree = "<group>"; };
+		AF7A5A572D40A557001CC64C /* AuthenticationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthenticationService.swift; sourceTree = "<group>"; };
+		AF7A5A592D40A5CC001CC64C /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		AF7A5A5B2D40A60C001CC64C /* UserStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UserStore.swift; sourceTree = "<group>"; };
+		AF7A5A5D2D40B269001CC64C /* Nonce.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Nonce.swift; sourceTree = "<group>"; };
+		AF7A5A602D40BB2B001CC64C /* HealthKitService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitService.swift; sourceTree = "<group>"; };
+		AF7A5A622D40BBC6001CC64C /* HealthKitAuthorizationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthKitAuthorizationService.swift; sourceTree = "<group>"; };
+		AF7A5A642D4106D5001CC64C /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		AF7A5A662D4129F2001CC64C /* Oralable.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Oralable.entitlements; sourceTree = "<group>"; };
 		AF8F42A42D253CAE00D7B2FD /* Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Button.swift; sourceTree = "<group>"; };
 		AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersistenceService.swift; sourceTree = "<group>"; };
 		AFDEE06C2D33E0AE00C02397 /* .swiftlint.yml */ = {isa = PBXFileReference; lastKnownFileType = text.yaml; path = .swiftlint.yml; sourceTree = "<group>"; };
@@ -163,6 +178,7 @@
 		44A79D612C90499E00BD84DD /* Oralable */ = {
 			isa = PBXGroup;
 			children = (
+				AF7A5A662D4129F2001CC64C /* Oralable.entitlements */,
 				AF677A1F2D2F6E5100CDACE3 /* Stores */,
 				AF4C15B32D1E7A5B00AAA005 /* Info.plist */,
 				AFEC19CB2D12BF3500404D42 /* Views */,
@@ -216,6 +232,7 @@
 			children = (
 				AFEC19CC2D12BF8E00404D42 /* MeasurementStore.swift */,
 				AF677A202D2F6E7400CDACE3 /* BluetoothStore.swift */,
+				AF7A5A5B2D40A60C001CC64C /* UserStore.swift */,
 			);
 			path = Stores;
 			sourceTree = "<group>";
@@ -253,12 +270,16 @@
 			isa = PBXGroup;
 			children = (
 				AFDEE06E2D34EF4800C02397 /* Mock */,
+				AF7A5A5D2D40B269001CC64C /* Nonce.swift */,
 				AF4C15A72D1D6D4E00AAA005 /* BluetoothService.swift */,
 				AF4C15AC2D1D6E5300AAA005 /* DeviceService.swift */,
 				AF4C15B92D23E66200AAA005 /* Service.swift */,
 				AF8F42A62D2692E400D7B2FD /* PersistenceService.swift */,
 				AF677A222D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift */,
 				AF677A242D2FAEB500CDACE3 /* BluetoothRestoreService.swift */,
+				AF7A5A572D40A557001CC64C /* AuthenticationService.swift */,
+				AF7A5A602D40BB2B001CC64C /* HealthKitService.swift */,
+				AF7A5A622D40BBC6001CC64C /* HealthKitAuthorizationService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -277,6 +298,8 @@
 				AFEC19C82D12B12700404D42 /* ChartView.swift */,
 				AF8F42A42D253CAE00D7B2FD /* Button.swift */,
 				AF2B1CB52D37F7BD002624E4 /* Test.swift */,
+				AF7A5A592D40A5CC001CC64C /* LoginView.swift */,
+				AF7A5A642D4106D5001CC64C /* ContentView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -466,6 +489,8 @@
 				AFEC19B92D116F0100404D42 /* ActivityItem.swift in Sources */,
 				AF677A232D2F7A5200CDACE3 /* BluetoothAuthorizationService.swift in Sources */,
 				AFEC19BA2D116F0100404D42 /* ActivityView.swift in Sources */,
+				AF7A5A582D40A557001CC64C /* AuthenticationService.swift in Sources */,
+				AF7A5A652D4106D5001CC64C /* ContentView.swift in Sources */,
 				AFEC19B32D116DD000404D42 /* MoreView.swift in Sources */,
 				AF2B1CB62D37F7BD002624E4 /* Test.swift in Sources */,
 				AFEC19C22D11847700404D42 /* DeviceView.swift in Sources */,
@@ -477,17 +502,22 @@
 				AFEC19C52D11882200404D42 /* MeasurementView.swift in Sources */,
 				AF8F42A52D253CAE00D7B2FD /* Button.swift in Sources */,
 				AFDEE0702D34EF6700C02397 /* MockPersistenceService.swift in Sources */,
+				AF7A5A5E2D40B269001CC64C /* Nonce.swift in Sources */,
 				AFEC19CD2D12BF8E00404D42 /* MeasurementStore.swift in Sources */,
 				AF677A272D312E0A00CDACE3 /* ConnectionIndicatorView.swift in Sources */,
 				AFEC19A32D102D3C00404D42 /* HomeView.swift in Sources */,
+				AF7A5A612D40BB2B001CC64C /* HealthKitService.swift in Sources */,
 				AF677A252D2FAEB500CDACE3 /* BluetoothRestoreService.swift in Sources */,
 				AFDEE0722D34F4A600C02397 /* MockDeviceService.swift in Sources */,
 				AF8F42A72D2692E400D7B2FD /* PersistenceService.swift in Sources */,
 				44A79D632C90499E00BD84DD /* OralableApp.swift in Sources */,
 				AF677A212D2F6E7400CDACE3 /* BluetoothStore.swift in Sources */,
+				AF7A5A632D40BBC6001CC64C /* HealthKitAuthorizationService.swift in Sources */,
 				AF4C15BF2D23F32200AAA005 /* Environment.swift in Sources */,
 				AFEC19BE2D116FC800404D42 /* Extensions.swift in Sources */,
 				AF4C15AD2D1D6E5300AAA005 /* DeviceService.swift in Sources */,
+				AF7A5A5C2D40A60C001CC64C /* UserStore.swift in Sources */,
+				AF7A5A5A2D40A5CC001CC64C /* LoginView.swift in Sources */,
 				AFEC19D32D12C12F00404D42 /* Models.swift in Sources */,
 				AF4C15B22D1D76F700AAA005 /* Timeout.swift in Sources */,
 			);
@@ -650,6 +680,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Oralable/Oralable.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"Oralable/Preview Content\"";
@@ -687,6 +718,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = Oralable/Oralable.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"Oralable/Preview Content\"";

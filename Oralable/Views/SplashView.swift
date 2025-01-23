@@ -7,7 +7,18 @@ import SwiftUI
 
 struct SplashView: View {
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        Spacer()
+        Image("banner")
+            .resizable()
+            .scaledToFit()
+            .padding(40)
+        Spacer()
+        HStack {
+            Spacer()
+                .padding(.bottom, 60)
+            Spacer()
+        }
+        .padding()
     }
 }
 

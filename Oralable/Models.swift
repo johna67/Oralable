@@ -5,7 +5,7 @@
 
 import Foundation
 
-public protocol Model: Hashable, Codable {}
+public protocol Model: Hashable, Codable, Sendable {}
 
 struct MeasurementData: Model {
     let date: Date
@@ -81,3 +81,11 @@ struct DeviceDescriptor: Model {
     let serviceIds: [UUID]
 }
 
+struct User: Model {
+    var firstName = ""
+    var lastName = ""
+    var email: String?
+    var height: Double?
+    var weight: Double?
+    var age: Int?
+}

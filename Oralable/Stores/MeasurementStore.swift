@@ -27,6 +27,10 @@ private actor PersistenceWorker {
     var movement = [MeasurementData]()
     
     var muscleActivityNormalRange: ClosedRange<Double>?
+    
+    var calibrating: Bool {
+        muscleActivityNormalRange == nil
+    }
 
     private var cancellables = Set<AnyCancellable>()
     private var ppgTask: Task<Void, Never>?
@@ -36,7 +40,7 @@ private actor PersistenceWorker {
     private var persistenceWorker = PersistenceWorker()
 
     private let ppgCalibrationFrameCount = 50
-    private var ppgFrameReceived = 0
+    private var ppgFrameReceivedSinceCalibrate = 0
 
     @ObservationIgnored
     @Injected(\.persistenceService) private var persistence
@@ -76,6 +80,11 @@ private actor PersistenceWorker {
             return nil
         }
     }
+    
+    func calibrate() {
+        muscleActivityNormalRange = nil
+        ppgFrameReceivedSinceCalibrate = 0
+    }
 
     private func subscribe(_ device: DeviceService) {
         guard !subscribed else { return }
@@ -85,15 +94,15 @@ private actor PersistenceWorker {
                 let measurement = convert(ppg, threshold: muscleActivityNormalRange)
                 muscleActivityMagnitude.append(measurement)
                 
-                ppgFrameReceived += 1
-                if muscleActivityNormalRange == nil, ppgFrameReceived >= ppgCalibrationFrameCount,
+                ppgFrameReceivedSinceCalibrate += 1
+                if calibrating, ppgFrameReceivedSinceCalibrate >= ppgCalibrationFrameCount,
                     let range = muscleActivityMagnitude.suffix(ppgCalibrationFrameCount).range(by: { a, b in
                         a.value < b.value
                     }) {
                     muscleActivityNormalRange = (range.min.value / 1.2)...(range.max.value * 1.2)
                     }
                 Task {
-                    if muscleActivityNormalRange != nil {
+                    if !calibrating {
                         await persistenceWorker.writePPGFrame(ppg)
                     }
                 }

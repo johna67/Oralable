@@ -84,6 +84,17 @@ struct MoreView: View {
                         .activitySheet($shareItem) { _, _, _, _ in
                         }
                     }
+                    
+                    Section {
+                        Button {
+                            measurements.calibrate()
+                        } label: {
+                            HStack {
+                                Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
+                                Text("Calibrate device")
+                            }
+                        }
+                    }
 
                     Section {
                         Button {

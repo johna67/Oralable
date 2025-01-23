@@ -10,13 +10,12 @@ import SwiftUI
 
 @main
 struct OralableApp: App {
-    @State private var bluetooth = BluetoothStore()
-
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            ContentView()
                 .environment(MeasurementStore())
-                .environment(bluetooth)
+                .environment(BluetoothStore())
+                .environment(UserStore())
         }
     }
 }

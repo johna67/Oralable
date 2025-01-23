@@ -8,5 +8,9 @@
 	<array>
 		<string>bluetooth-central</string>
 	</array>
+    <key>NSHealthShareUsageDescription</key>
+    <string>We use your health data to customize your experience.</string>
+    <key>NSHealthUpdateUsageDescription</key>
+    <string>We update your health data to help you achieve your goals.</string>
 </dict>
 </plist>

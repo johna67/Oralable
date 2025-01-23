@@ -12,6 +12,8 @@ protocol PersistenceService {
     func readPPGFrames(limit: Int?) -> [PPGFrame]
     func writeAccelerometerFrame(_ frame: AccelerometerFrame)
     func readAccelerometerFrames(limit: Int?) -> [AccelerometerFrame]
+    func readUser() -> User?
+    func writeUser(_ user: User)
 }
 
 @Model
@@ -82,6 +84,19 @@ final class AccelerometerFrameModel {
     }
 }
 
+@Model
+final class UserModel {
+    @Attribute var firstName: String
+    @Attribute var lastName: String
+    @Attribute var email: String
+    
+    init(firstName: String, lastName: String, email: String) {
+        self.firstName = firstName
+        self.lastName = lastName
+        self.email = email
+    }
+}
+
 final class SwiftDataPersistence: PersistenceService {
     private var container: ModelContainer!
 
@@ -91,7 +106,8 @@ final class SwiftDataPersistence: PersistenceService {
                 for: PPGFrameModel.self,
                 AccelerometerFrameModel.self,
                 PPGSampleModel.self,
-                AccelerometerSampleModel.self
+                AccelerometerSampleModel.self,
+                UserModel.self
             )
         } catch {
             Log.error("Failed to initialize persistence: \(error)")
@@ -144,6 +160,23 @@ final class SwiftDataPersistence: PersistenceService {
             Log.error("Could not read Accelerometer frames: \(error)")
             return []
         }
+    }
+    
+    func writeUser(_ user: User) {
+        let model = UserModel(firstName: user.firstName, lastName: user.lastName, email: user.email ?? "")
+        write(model)
+    }
+    
+    func readUser() -> User? {
+        let context = ModelContext(container)
+        do {
+            guard let model = try context.fetch(FetchDescriptor<UserModel>()).first else { return nil }
+            return User(firstName: model.firstName, lastName: model.lastName, email: model.email)
+        } catch {
+            Log.error("Could not read User: \(error)")
+        }
+        
+        return nil
     }
 
     private func write(_ model: any PersistentModel) {
