@@ -27,9 +27,11 @@ import Combine
     var user: User?
     
     func signInWithApple(credential: ASAuthorizationAppleIDCredential, rawNonce: String) async {
-        let user = User(firstName: credential.fullName?.givenName ?? "", lastName: credential.fullName?.familyName ?? "", email: credential.email)
+        user = User(firstName: credential.fullName?.givenName ?? "", lastName: credential.fullName?.familyName ?? "", email: credential.email)
         await updateUserStats()
-        db.writeUser(user)
+        if let user {
+            db.writeUser(user)
+        }
     }
     
     func updateUserStats() async {

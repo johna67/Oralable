@@ -10,6 +10,7 @@ struct HomeView: View {
     @State private var deviceShown = false
     @Environment(MeasurementStore.self) private var measurements
     @Environment(UserStore.self) private var userStore
+    @Environment(BluetoothStore.self) private var bluetooth
 
     var body: some View {
         NavigationStack {
@@ -66,8 +67,10 @@ struct HomeView: View {
                         NavigationLink(value: MeasurementType.movement) {
                             MeasurementView(measurementType: .movement)
                         }
-                        PrimaryButton(title: "Calibrate", progressing: measurements.calibrating, progressingTitle: "Calibrating") {
-                            measurements.calibrate()
+                        if bluetooth.status == .connected {
+                            PrimaryButton(title: "Calibrate", progressing: measurements.calibrating, progressingTitle: "Calibrating") {
+                                measurements.calibrate()
+                            }
                         }
                     }
                 }

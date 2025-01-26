@@ -12,6 +12,7 @@ struct MoreView: View {
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
+        @Bindable var measurements = measurements
         NavigationView {
             VStack {
                 HStack {
@@ -86,13 +87,12 @@ struct MoreView: View {
                     }
                     
                     Section {
-                        Button {
-                            measurements.calibrate()
-                        } label: {
+                        Stepper(value: $measurements.thresholdPercentage, in: 0...1.0, step: 0.01) {
                             HStack {
-                                Image(systemName: "arrow.trianglehead.2.clockwise.rotate.90")
-                                Text("Calibrate device")
+                                Image(systemName: "ruler")
+                                Text("Threshold: \(String(format: "%.2f", measurements.thresholdPercentage * 100))%")
                             }
+                            
                         }
                     }
 
@@ -109,14 +109,18 @@ struct MoreView: View {
                             Button("Sign Out", role: .destructive) {}
                         }
                     }
+                    HStack {
+                        Spacer()
+                        Text("App Version \(Bundle.main.appVersion ?? "")")
+                            .opacity(0.3)
+                            .padding()
+                        Spacer()
+                    }
+                    .listRowBackground(Color.clear)
                 }
+               
             }
             .foregroundStyle(Color.foreground)
-            .overlay(alignment: .bottom) {
-                Text("App Version \(Bundle.main.appVersion ?? "")")
-                    .opacity(0.3)
-                    .padding()
-            }
             .scrollContentBackground(.hidden)
             .background(Color.background)
         }

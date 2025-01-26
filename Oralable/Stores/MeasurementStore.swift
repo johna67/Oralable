@@ -31,6 +31,12 @@ private actor PersistenceWorker {
     var calibrating: Bool {
         muscleActivityNormalRange == nil
     }
+    
+    var thresholdPercentage: Double {
+        didSet {
+            UserDefaults.standard.set(thresholdPercentage, forKey: "thresholdPercentage")
+        }
+    }
 
     private var cancellables = Set<AnyCancellable>()
     private var ppgTask: Task<Void, Never>?
@@ -52,6 +58,11 @@ private actor PersistenceWorker {
     private var currentMovementMinute: (date: Date, count: Int)?
 
     init() {
+        thresholdPercentage = UserDefaults.standard.double(forKey: "thresholdPercentage")
+        if thresholdPercentage == 0 {
+            thresholdPercentage = 0.2
+        }
+        
         muscleActivityMagnitude = persistence.readPPGFrames(limit: nil).map { convert($0) }
         movement = persistence.readAccelerometerFrames(limit: nil).map { convert($0) }
         
@@ -99,7 +110,7 @@ private actor PersistenceWorker {
                     let range = muscleActivityMagnitude.suffix(ppgCalibrationFrameCount).range(by: { a, b in
                         a.value < b.value
                     }) {
-                    muscleActivityNormalRange = (range.min.value / 1.2)...(range.max.value * 1.2)
+                    muscleActivityNormalRange = (range.min.value / 1 + thresholdPercentage)...(range.max.value * thresholdPercentage)
                     }
                 Task {
                     if !calibrating {

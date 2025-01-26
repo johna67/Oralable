@@ -11,7 +11,6 @@ struct ContentView: View {
     }
     
     @State private var scene = Scene.splash
-    @State private var started = false
     @Environment(UserStore.self) private var userStore
     
     var body: some View {
@@ -34,23 +33,13 @@ struct ContentView: View {
         }
         .onChange(of: userStore.user) {
             if userStore.user != nil {
-                if !started {
-                    started = true
-                    setScene()
-                } else {
-                    setScene()
-                }
-            } else {
-                started = false
                 setScene()
             }
         }
     }
     
     private func setScene() {
-        let user = userStore.user
-
-        var newScene = Scene.splash
+        let newScene: Scene
         if userStore.user != nil {
             newScene = .main
         } else {
