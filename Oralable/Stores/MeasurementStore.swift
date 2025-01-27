@@ -110,7 +110,7 @@ private actor PersistenceWorker {
                     let range = muscleActivityMagnitude.suffix(ppgCalibrationFrameCount).range(by: { a, b in
                         a.value < b.value
                     }) {
-                    muscleActivityNormalRange = (range.min.value / 1 + thresholdPercentage)...(range.max.value * thresholdPercentage)
+                    muscleActivityNormalRange = (range.min.value / 1 + thresholdPercentage)...(range.max.value * (1 + thresholdPercentage))
                     }
                 Task {
                     if !calibrating {
