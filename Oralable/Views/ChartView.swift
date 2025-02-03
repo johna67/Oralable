@@ -14,8 +14,14 @@ import SwiftUI
 //}
 
 struct CountMeasurementData: Hashable {
-    let count: Int
+    let insideCount: Int
+    let outsideCount: Int
     let date: Date
+    var percentage: Double {
+        let dinside = Double(insideCount)
+        let doutside = Double(outsideCount)
+        return (dinside / (dinside + doutside)) * 100.0
+    }
 }
 
 struct AggregatedData: Hashable {
@@ -102,10 +108,11 @@ struct ChartView: View {
             }
             return (range.min.avg / 1.1)...(range.max.avg * 1.1)
         } else {
-            guard let range = countData.max(by: { $0.count < $1.count }) else {
-                return 0...0
-            }
-            return 0...Double(range.count) * 1.1
+//            guard let range = countData.max(by: { $0.count < $1.count }) else {
+//                return 0...0
+//            }
+//            return 0...Double(range.count) * 1.1
+            return 0...100
         }
     }
 
@@ -176,10 +183,10 @@ struct ChartView: View {
             } else {
                 Chart {
                     ForEach(countData, id: \.self) { data in
-                        BarMark(x: .value("", data.date), y: .value("", data.count), width: 24)
-                            .clipShape(.capsule)
+                        BarMark(x: .value("", data.date), y: .value("", data.percentage), width: 24)
                             .foregroundStyle(Color.accent)
                     }
+                    .clipShape(.capsule)
                 }
             }
         }
@@ -187,7 +194,7 @@ struct ChartView: View {
         .chartScrollTargetBehavior(targetBehavior)
         .chartScrollPosition(initialX: scrollPosition)
         .chartYAxis(measurementType == .movement ? .hidden : .visible)
-        .chartYScale(domain: yDomain)
+        //.chartYScale(domain: yDomain)
         .chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end, range: .plotDimension(padding: 10))
         .chartXAxis {
             switch selectedRange {
@@ -302,12 +309,17 @@ struct ChartView: View {
             let groupDate = Date(timeIntervalSince1970: floor(measurement.date.timeIntervalSince1970 / granularity) * granularity)
             
             if let last = result.last, last.date == groupDate {
-                if !(threshold ~= measurement.value) {
-                    result[result.count - 1] = .init(count: last.count + 1, date: groupDate)
+                if threshold ~= measurement.value {
+                    result[result.count - 1] = .init(insideCount: last.insideCount + 1, outsideCount: last.outsideCount, date: groupDate)
+                } else {
+                    result[result.count - 1] = .init(insideCount: last.insideCount, outsideCount: last.outsideCount + 1, date: groupDate)
                 }
             } else {
-                let initialCount = threshold ~= measurement.value ? 0 : 1
-                result.append(CountMeasurementData(count: initialCount, date: groupDate))
+                if threshold ~= measurement.value {
+                    result.append(.init(insideCount: 1, outsideCount: 0, date: groupDate))
+                } else {
+                    result.append(.init(insideCount: 0, outsideCount: 1, date: groupDate))
+                }
             }
         }
         

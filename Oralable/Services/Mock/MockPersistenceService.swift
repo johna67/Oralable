@@ -21,7 +21,7 @@ final class MockPersistenceService: PersistenceService {
     private var ppgFrameCounter: UInt32 = 33318
     
     init() {
-        let totalFrames = 4
+        let totalFrames = 40000
         let interval = 0.4
         let startTime = Date()
         
@@ -31,7 +31,7 @@ final class MockPersistenceService: PersistenceService {
         for i in 0..<totalFrames {
             let timestamp = startTime.addingTimeInterval(-Double(i) * interval)
             
-            let isRandomized = Int.random(in: 1...100) > 90
+            let isRandomized = Int.random(in: 1...100) > 70
             let sample: AccelerometerSample
             
             if isRandomized {
@@ -52,7 +52,7 @@ final class MockPersistenceService: PersistenceService {
             accelerometerFrames.append(accelerometerFrame)
             accelerometerFrameCounter += 1
             
-            let isIRRandomized = Int.random(in: 1...100) > 90
+            let isIRRandomized = Int.random(in: 1...100) > 70
             let irValue = isIRRandomized
                 ? Int32.random(in: 160000...3_500_000)
                 : 160000
