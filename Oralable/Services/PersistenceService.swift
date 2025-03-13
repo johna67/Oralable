@@ -14,6 +14,19 @@ protocol PersistenceService {
     func readAccelerometerFrames(limit: Int?) -> [AccelerometerFrame]
     func readUser() -> User?
     func writeUser(_ user: User)
+    func writeEvent(_ event: Event)
+    func readEvents(limit: Int?) -> [Event]
+}
+
+@Model
+final class EventModel {
+    @Attribute var timestamp: Date
+    @Attribute var type: Event.EventType
+    
+    init(timestamp: Date, type: Event.EventType) {
+        self.timestamp = timestamp
+        self.type = type
+    }
 }
 
 @Model
@@ -33,20 +46,20 @@ final class PPGSampleModel {
 final class PPGFrameModel {
     @Attribute var frameCounter: UInt32
     @Attribute var timestamp: Date
-    @Relationship var avgSample: PPGSampleModel
+    @Relationship var samples: [PPGSampleModel]
 
-    init(frameCounter: UInt32, timestamp: Date, avgSample: PPGSampleModel) {
+    init(frameCounter: UInt32, timestamp: Date, samples: [PPGSampleModel]) {
         self.frameCounter = frameCounter
         self.timestamp = timestamp
-        self.avgSample = avgSample
+        self.samples = samples
     }
 
     func toPPGFrame() -> PPGFrame {
-        PPGFrame(frameCounter: frameCounter, timestamp: timestamp, avgSample: PPGSample(red: avgSample.red, ir: avgSample.ir, green: avgSample.green))
+        PPGFrame(frameCounter: frameCounter, timestamp: timestamp, samples: samples.map { PPGSample(red: $0.red, ir: $0.ir, green: $0.green) } )
     }
 
     convenience init(_ frame: PPGFrame) {
-        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, avgSample: PPGSampleModel(red: frame.avgSample.red, ir: frame.avgSample.ir, green: frame.avgSample.green))
+        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, samples: frame.samples.map { PPGSampleModel(red: $0.red, ir: $0.ir, green: $0.green) })
     }
 }
 
@@ -67,20 +80,20 @@ final class AccelerometerSampleModel {
 final class AccelerometerFrameModel {
     @Attribute var frameCounter: UInt32
     @Attribute var timestamp: Date
-    @Relationship var maxSample: AccelerometerSampleModel
+    @Relationship var samples: [AccelerometerSampleModel]
 
-    init(frameCounter: UInt32, timestamp: Date, maxSample: AccelerometerSampleModel) {
+    init(frameCounter: UInt32, timestamp: Date, samples: [AccelerometerSampleModel]) {
         self.frameCounter = frameCounter
         self.timestamp = timestamp
-        self.maxSample = maxSample
+        self.samples = samples
     }
 
     convenience init(_ frame: AccelerometerFrame) {
-        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, maxSample: AccelerometerSampleModel(x: frame.maxSample.x, y: frame.maxSample.y, z: frame.maxSample.z))
+        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, samples: frame.samples.map { AccelerometerSampleModel(x: $0.x, y: $0.y, z: $0.z) })
     }
 
     func toAccelerometerFrame() -> AccelerometerFrame {
-        AccelerometerFrame(frameCounter: frameCounter, timestamp: timestamp, maxSample: AccelerometerSample(x: maxSample.x, y: maxSample.y, z: maxSample.z))
+        AccelerometerFrame(frameCounter: frameCounter, timestamp: timestamp, samples: samples.map { AccelerometerSample(x: $0.x, y: $0.y, z: $0.z) })
     }
 }
 
@@ -107,7 +120,8 @@ final class SwiftDataPersistence: PersistenceService {
                 AccelerometerFrameModel.self,
                 PPGSampleModel.self,
                 AccelerometerSampleModel.self,
-                UserModel.self
+                UserModel.self,
+                EventModel.self
             )
         } catch {
             Log.error("Failed to initialize persistence: \(error)")
@@ -177,6 +191,22 @@ final class SwiftDataPersistence: PersistenceService {
         }
         
         return nil
+    }
+    
+    func readEvents(limit: Int?) -> [Event] {
+        let context = ModelContext(container)
+        do {
+            let models: [EventModel] = try context.fetch(FetchDescriptor<EventModel>())
+            return models.map { .init(date: $0.timestamp, type: $0.type) }
+        } catch {
+            Log.error("Could not read Events: \(error)")
+            return []
+        }
+    }
+    
+    func writeEvent(_ event: Event) {
+        let model = EventModel(timestamp: event.date, type: event.type)
+        write(model)
     }
 
     private func write(_ model: any PersistentModel) {

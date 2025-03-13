@@ -31,7 +31,7 @@ struct PPGSample {
 struct PPGFrame {
     let frameCounter: UInt32
     let timestamp: Date
-    let avgSample: PPGSample
+    let samples: [PPGSample]
 }
 
 struct AccelerometerSample {
@@ -47,7 +47,7 @@ struct AccelerometerSample {
 struct AccelerometerFrame {
     let frameCounter: UInt32
     let timestamp: Date
-    let maxSample: AccelerometerSample
+    let samples: [AccelerometerSample]
 }
 
 final class TGMService: DeviceService {
@@ -116,6 +116,13 @@ final class TGMService: DeviceService {
         }
 
         Log.info("Successfully discovered characteristics.")
+        
+        do {
+            let batteryData = try await readData(for: batteryCharacteristic)
+            try parseBatteryData(batteryData)
+        } catch {
+            Log.warn("Failed to read battery: \(error)")
+        }
 
         subscribe()
 
@@ -163,87 +170,74 @@ final class TGMService: DeviceService {
     }
 
     private func parsePPGData(_ data: Data?) throws {
-        guard let data, data.count > 4 else {
-            throw BluetoothServiceError(message: "Cannot read PPG data")
+        guard let data, data.count >= 4 else {
+            throw BluetoothServiceError(message: "Incomplete PPG data")
         }
 
         let frameCounter = data[0 ..< 4].withUnsafeBytes { $0.load(as: UInt32.self) }
         let sampleSize = 12
-        var sampleCount: Int32 = 0
 
         var offset = 4
-        var totalRed: Int32 = 0
-        var totalIr: Int32 = 0
-        var totalGreen: Int32 = 0
+        var samples = [PPGSample]()
 
         // Start reading samples after the frame counter (byte 4 onward)
         while offset + sampleSize <= data.count {
-            totalRed += data[offset ..< (offset + 4)].withUnsafeBytes { $0.load(as: Int32.self) }
-            totalIr += data[(offset + 4) ..< (offset + 8)].withUnsafeBytes { $0.load(as: Int32.self) }
-            totalGreen += data[(offset + 8) ..< (offset + 12)].withUnsafeBytes { $0.load(as: Int32.self) }
+            let red = data[offset ..< (offset + 4)].withUnsafeBytes { $0.load(as: Int32.self) }
+            let ir = data[(offset + 4) ..< (offset + 8)].withUnsafeBytes { $0.load(as: Int32.self) }
+            let green = data[(offset + 8) ..< (offset + 12)].withUnsafeBytes { $0.load(as: Int32.self) }
+            
+            samples.append(PPGSample(red: red, ir: ir, green: green))
 
             offset += sampleSize
-            sampleCount += 1
         }
 
-        guard sampleCount > 0 else { return }
-
-        let avgSample = PPGSample(red: totalRed / sampleCount, ir: totalIr / sampleCount, green: totalGreen / sampleCount)
-        let frame = PPGFrame(frameCounter: frameCounter, timestamp: Date(), avgSample: avgSample)
+        let frame = PPGFrame(frameCounter: frameCounter, timestamp: Date(), samples: samples)
 
         ppgContinuation?.yield(frame)
     }
 
     private func parseAccelerometerData(_ data: Data?) throws {
-        guard let data, data.count > 4 else {
-            throw BluetoothServiceError(message: "Cannot read accelerometer data")
+        guard let data, data.count >= 4 else {
+            throw BluetoothServiceError(message: "Incomplete accelerometer data")
         }
 
         let frameCounter = data[0 ..< 4].withUnsafeBytes { $0.load(as: UInt32.self) }
         let sampleSize = 6
-        var sampleCount = 0
-
-//        var totalX: Int = 0
-//        var totalY: Int = 0
-//        var totalZ: Int = 0
-        var maxMagnitude = 0.0
-        var maxVector: (x: Int16, y: Int16, z: Int16) = (0, 0, 0)
-
-        // Start reading samples after the frame counter (byte 4 onward)
+        var samples = [AccelerometerSample]()
+        
         var offset = 4
+        
+        // Start reading samples after the frame counter (byte 4 onward)
         while offset + sampleSize <= data.count {
             let x = Int16(littleEndian: data[offset ..< (offset + 2)].withUnsafeBytes { $0.load(as: Int16.self) })
             let y = Int16(littleEndian: data[(offset + 2) ..< (offset + 4)].withUnsafeBytes { $0.load(as: Int16.self) })
             let z = Int16(littleEndian: data[(offset + 4) ..< (offset + 6)].withUnsafeBytes { $0.load(as: Int16.self) })
-
-            let magnitude = sqrt(Double(x) * Double(x) + Double(y) * Double(y) + Double(z) * Double(z))
-
-            if magnitude > maxMagnitude {
-                maxMagnitude = magnitude
-                maxVector = (x, y, z)
-            }
+            
+            samples.append(AccelerometerSample(x: x, y: y, z: z))
 
             offset += sampleSize
-            sampleCount += 1
         }
 
-        guard sampleCount > 0 else { return }
-
-        let maxSample = AccelerometerSample(x: maxVector.x, y: maxVector.y, z: maxVector.z)
-        let frame = AccelerometerFrame(frameCounter: frameCounter, timestamp: Date(), maxSample: maxSample)
+        let frame = AccelerometerFrame(frameCounter: frameCounter, timestamp: Date(), samples: samples)
 
         accelerometerContinuation?.yield(frame)
     }
 
     private func parseTemperatureData(_ data: Data?) throws {
-        guard let data else {
-            throw BluetoothServiceError(message: "Cannot read temperature data")
+        guard let data, data.count >= 6 else {
+            throw BluetoothServiceError(message: "Incomplete temperature data")
         }
+        
+        let temp = Int(data[4..<6].withUnsafeBytes {
+            $0.load(as: Int16.self)
+        })
+        
+        temperatureContinuation?.yield(Double(temp) / 100.0)
     }
 
     private func parseBatteryData(_ data: Data?) throws {
         guard let data else {
-            throw BluetoothServiceError(message: "Cannot read battery data")
+            throw BluetoothServiceError(message: "Incomplete battery data")
         }
 
         let battery = Int(data.withUnsafeBytes {
@@ -256,6 +250,7 @@ final class TGMService: DeviceService {
         Log.debug("Battery: \(battery)")
     }
 
+    @MainActor
     private func readData(for characteristic: Characteristic?) async throws -> Data? {
         guard let characteristic else {
             throw BluetoothServiceError(message: "Cannot read data, characteristic not found")

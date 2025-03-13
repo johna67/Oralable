@@ -79,8 +79,29 @@ extension View {
 }
 
 extension Calendar {
+    public enum RoundDateMode {
+        case toCeilMins(_: Int)
+        case toFloorMins(_: Int)
+    }
+    
+    func startOfHour(for date: Date) -> Date {
+        let components = dateComponents([.year, .month, .day, .hour], from: date)
+        return self.date(from: components)!
+    }
+    
     func startOfWeek(for date: Date) -> Date {
         let components = dateComponents([.yearForWeekOfYear, .weekOfYear], from: date)
+        return self.date(from: components)!
+    }
+    
+    func endOfDay(for date: Date) -> Date {
+        let end = self.date(byAdding: .day, value: 1, to: date) ?? date
+        return startOfDay(for: end)
+    }
+    
+    func endOfWeek(for date: Date) -> Date {
+        let end = self.date(byAdding: .weekOfYear, value: 1, to: date) ?? date
+        var components = dateComponents([.yearForWeekOfYear, .weekOfYear], from: end)
         return self.date(from: components)!
     }
     
@@ -88,6 +109,54 @@ extension Calendar {
         let components = dateComponents([.year, .month], from: date)
         return self.date(from: components)!
     }
+    
+//    func lowerBound(of date: Date, minutes count: Int) -> Date {
+//        guard count > 0, let minute = dateComponents([.minute], from: date).minute else { return date }
+//        self
+//        return self.date(bySetting: .minute, value: (minute / count) * count, of: date) ?? date
+//    }
+//    
+//    func upperBound(of date: Date, minutes count: Int) -> Date {
+//        guard count > 0, let minute = dateComponents([.minute], from: date).minute else { return date }
+//        return nextDate(after: date, matching: DateComponents(minute: (minute / count + 1) * count % 60), matchingPolicy: .nextTime) ?? date
+//    }
+    
+    func upperBound(of date: Date, minutes count: Int) -> Date {
+        guard count > 0 else { return date }
+        let components = dateComponents([.minute, .second], from: date)
+        guard let minute = components.minute, let second = components.second else { return date }
+        
+        let remain = minute % count
+        let value = (60 * (count - remain)) - second
+        
+        return self.date(byAdding: .second, value: value, to: date) ?? date
+    }
+    
+    func lowerBound(of date: Date, minutes count: Int) -> Date {
+        guard count >= 0 else { return date }
+        let components = dateComponents([.minute, .second], from: date)
+        guard let minute = components.minute, let second = components.second else { return date }
+        
+        let remain = (minute % count)
+        let value = -(60 * remain + second)
+        
+        return self.date(byAdding: .second, value: value, to: date) ?? date
+    }
+    
+//    func dateRoundedAt(_ style: RoundDateMode) -> Date {
+//        switch style {
+//        case .toCeilMins(let minuteInterval):
+//            let remain: Int = (minute % minuteInterval)
+//            let value = (( 60 * (minuteInterval - remain)) - second)
+//            return dateByAdding(value, .second)
+//
+//        case .toFloorMins(let minuteInterval):
+//            let remain: Int = (minute % minuteInterval)
+//            let value = -((Int(1.minutes.timeInterval) * remain) + second)
+//            return dateByAdding(value, .second)
+//
+//        }
+//    }
 }
 
 extension Collection {

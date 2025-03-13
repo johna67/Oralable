@@ -301,7 +301,7 @@ struct ChartView: View {
     
     private func countMeasurementsOutsideThreshold(_ data: [MeasurementData], granularity: TimeInterval) -> [CountMeasurementData] {
         guard !data.isEmpty else { return [] }
-        guard let threshold = measurements.muscleActivityNormalRange else { return [] }
+        guard let threshold = measurements.muscleActivityThreshold else { return [] }
         
         var result: [CountMeasurementData] = []
         
@@ -309,13 +309,13 @@ struct ChartView: View {
             let groupDate = Date(timeIntervalSince1970: floor(measurement.date.timeIntervalSince1970 / granularity) * granularity)
             
             if let last = result.last, last.date == groupDate {
-                if threshold ~= measurement.value {
+                if measurement.value < threshold {
                     result[result.count - 1] = .init(insideCount: last.insideCount + 1, outsideCount: last.outsideCount, date: groupDate)
                 } else {
                     result[result.count - 1] = .init(insideCount: last.insideCount, outsideCount: last.outsideCount + 1, date: groupDate)
                 }
             } else {
-                if threshold ~= measurement.value {
+                if measurement.value < threshold {
                     result.append(.init(insideCount: 1, outsideCount: 0, date: groupDate))
                 } else {
                     result.append(.init(insideCount: 0, outsideCount: 1, date: groupDate))

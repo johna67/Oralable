@@ -6,6 +6,17 @@
 import Foundation
 
 final class MockPersistenceService: PersistenceService {
+    func writeEvent(_ event: Event) {
+        
+    }
+    
+    func readEvents(limit: Int?) -> [Event] {
+        [
+            Event(date: Date().addingTimeInterval(-200 * 60), type: .clenching),
+            Event(date: Date().addingTimeInterval(-5 * 60), type: .grinding),
+        ]
+    }
+    
     func readUser() -> User? {
         User(firstName: "John", lastName: "Test", email: "john@test.com", height: 178.5, weight: 81.2)
     }
@@ -47,7 +58,7 @@ final class MockPersistenceService: PersistenceService {
             let accelerometerFrame = AccelerometerFrame(
                 frameCounter: accelerometerFrameCounter,
                 timestamp: timestamp,
-                maxSample: sample
+                samples: [sample]
             )
             accelerometerFrames.append(accelerometerFrame)
             accelerometerFrameCounter += 1
@@ -61,7 +72,7 @@ final class MockPersistenceService: PersistenceService {
             let ppgFrame = PPGFrame(
                 frameCounter: ppgFrameCounter,
                 timestamp: timestamp,
-                avgSample: ppgSample
+                samples: [ppgSample]
             )
             ppgFrames.append(ppgFrame)
             ppgFrameCounter += 1

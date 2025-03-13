@@ -51,12 +51,12 @@ struct HomeView: View {
                 .background(.surface)
                 .cornerRadius(6)
                 .padding(.bottom)
-                Text("Latest Measurements")
+                Text("Measurements")
                     .textStyle(.subtitle())
                     .padding([.top, .bottom])
                 ScrollView {
                     VStack(spacing: 20) {
-                        if measurements.muscleActivityNormalRange != nil {
+                        if measurements.muscleActivityThreshold != nil {
                             NavigationLink(value: MeasurementType.muscleActivityMagnitude) {
                                 MeasurementView(measurementType: .muscleActivityMagnitude)
                             }
@@ -64,18 +64,24 @@ struct HomeView: View {
                             MeasurementView(measurementType: .muscleActivityMagnitude)
                         }
 
-                        NavigationLink(value: MeasurementType.movement) {
-                            MeasurementView(measurementType: .movement)
-                        }
-                        if bluetooth.status == .connected {
-                            PrimaryButton(title: "Calibrate", progressing: measurements.calibrating, progressingTitle: "Calibrating") {
-                                measurements.calibrate()
-                            }
-                        }
+//                        NavigationLink(value: MeasurementType.movement) {
+//                            MeasurementView(measurementType: .movement)
+//                        }
+//                        if bluetooth.status == .connected {
+//                            PrimaryButton(title: "Calibrate", progressing: measurements.calibrating, progressingTitle: "Calibrating") {
+//                                measurements.calibrate()
+//                            }
+//                        }
                     }
                 }
                 .navigationDestination(for: MeasurementType.self) { type in
-                    ChartView(measurementType: type)
+                    switch type {
+                    case .muscleActivityMagnitude:
+                        MuscleActivityChartView()
+                    default:
+                        ChartView(measurementType: type)
+                    }
+
                 }
                 .edgesIgnoringSafeArea(.bottom)
                 Spacer()

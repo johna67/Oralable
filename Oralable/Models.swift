@@ -10,14 +10,21 @@ public protocol Model: Hashable, Codable, Sendable {}
 struct MeasurementData: Model {
     let date: Date
     let value: Double
-    let belowThreshold: Bool
-    let aboveThreshold: Bool
-    let calibrated: Bool
 }
 
 struct SummaryData: Model {
     let date: Date
     var value: Int
+}
+
+struct Event: Model {
+    enum EventType: String, Codable {
+        case clenching = "Clenching"
+        case grinding = "Grinding"
+        case other = "Other"
+    }
+    let date: Date
+    let type: EventType
 }
 
 enum MeasurementType: String, Codable {

@@ -41,10 +41,7 @@ struct MeasurementView: View {
     
     private var status: Status {
         if bluetooth.status == .connected {
-            if measurementType == .muscleActivityMagnitude || measurementType == .muscleActivity, measurements.muscleActivityNormalRange == nil {
-                return .calibrating
-            }
-            return .live
+            return measurements.measuring ? .live : .calibrating
         }
         return .disconnected
     }
@@ -60,8 +57,9 @@ struct MeasurementView: View {
         }
     }
     
-    private var outsideRange: Bool {
-        data.last?.aboveThreshold ?? false
+    private var underThreshold: Bool {
+        guard let threshold = measurements.muscleActivityThreshold, let value = data.last?.value else { return true }
+        return value < threshold
     }
 
     private var dateInterval: DateInterval {
@@ -137,7 +135,7 @@ struct MeasurementView: View {
             )
             .interpolationMethod(.monotone)
         }
-        .foregroundStyle(outsideRange ? Color.accent : Color.approve)
+        .foregroundStyle(underThreshold ? Color.approve : Color.accent)
         .chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end)
         .chartYScale(domain: yDomain)
         .chartXAxis(.hidden)
@@ -151,10 +149,10 @@ struct MeasurementView: View {
             .environment(MeasurementStore())
             .environment(BluetoothStore())
             .padding()
-        
-        MeasurementView(measurementType: .movement)
-            .environment(MeasurementStore())
-            .environment(BluetoothStore())
-            .padding()
+//        
+//        MeasurementView(measurementType: .movement)
+//            .environment(MeasurementStore())
+//            .environment(BluetoothStore())
+//            .padding()
     }
 }

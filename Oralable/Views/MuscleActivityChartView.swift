@@ -1,0 +1,312 @@
+//
+// Created by Gabor Detari gabor@detari.dev
+// Copyright 2024 Gabor Detari. All rights reserved.
+//
+
+import Charts
+import SwiftUI
+
+struct MuscleActivityChartView: View {
+    @Environment(MeasurementStore.self) var measurements: MeasurementStore
+    @State private var selectedRange: ChartRange = .day
+    @State private var startTimeInterval = TimeInterval()
+    
+    @State private var hourlyData = [MeasurementData]()
+    @State private var dailyData = [MeasurementData]()
+    @State private var weeklyData = [MeasurementData]()
+    
+    @State private var showAnnotationSheet = false
+    
+    @State private var selectedDate: Date?
+    
+    @State private var scale: CGFloat = 1.0
+        @State private var lastScale: CGFloat = 1.0
+    
+    private var data: [MeasurementData] {
+        measurements.muscleActivityMagnitude
+    }
+
+    private enum ChartRange: String, CaseIterable, Identifiable {
+        case hour = "Hour"
+        case day = "Day"
+        case week = "Week"
+
+        var id: String { rawValue }
+    }
+    
+    private var gradient: LinearGradient {
+        let minValue = aggregatedData.map { $0.value }.min() ?? 0
+        let maxValue = aggregatedData.map { $0.value }.max() ?? 1
+        
+        let threshold: Double =  measurements.muscleActivityThreshold ?? 0.0 / maxValue// (measurements.muscleActivityNormalRange?.upperBound ?? 0.0) / maxValue
+
+        return LinearGradient(
+            gradient: Gradient(stops: [
+                .init(color: Color.approve, location: CGFloat((threshold - 0.01 - minValue) / (maxValue - minValue))),
+                .init(color: Color.accent, location: CGFloat((threshold - minValue) / (maxValue - minValue)))
+            ]),
+            startPoint: .bottom,
+            endPoint: .top
+        )
+    }
+    
+    private var aggregatedData: [MeasurementData] {
+        switch selectedRange {
+        case .hour:
+            hourlyData
+        case .day:
+            dailyData
+        case .week:
+            weeklyData
+        }
+    }
+
+    private var targetBehavior: ValueAlignedChartScrollTargetBehavior {
+        switch selectedRange {
+        case .hour: .valueAligned(matching: DateComponents(second: 0), majorAlignment: .matching(DateComponents(second: 0)))
+        case .day: .valueAligned(matching: DateComponents(minute: 0), majorAlignment: .matching(DateComponents(minute: 0)))
+        case .week: .valueAligned(matching: DateComponents(hour: 0), majorAlignment: .matching(DateComponents(hour: 0)))
+        }
+    }
+
+    private var yDomain: ClosedRange<Double> {
+        guard let range = aggregatedData.range(by: { a, b in
+            a.value < b.value
+        }) else {
+            return 0...0
+        }
+        return (range.min.value / 1.1)...(range.max.value * 1.1)
+    }
+    
+    private var scrollPosition: Double {
+        Date().timeIntervalSinceReferenceDate
+    }
+
+    var body: some View {
+        VStack {
+            Picker("Range", selection: $selectedRange) {
+                ForEach(ChartRange.allCases) { range in
+                    Text(range.rawValue).tag(range)
+                }
+            }
+            .pickerStyle(.segmented)
+            .padding()
+            .onChange(of: selectedRange) {
+                selectedDate = nil
+            }
+            chart
+        }
+        .background(Color.background)
+        .onAppear {
+            UISegmentedControl.appearance().selectedSegmentTintColor = .background
+            UISegmentedControl.appearance().backgroundColor = .surface
+            
+            hourlyData = aggregateWithWeightedMedian(data, interval: 60)
+            dailyData = aggregateWithWeightedMedian(data, interval: 10 * 60.0)
+            weeklyData = aggregateWithWeightedMedian(data, interval: 60 * 60.0)
+        }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    showAnnotationSheet = true
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                        .textStyle(.iconLarge(.accent))
+                }
+                .opacity(selectedDate == nil ? 0 : 1)
+            }
+        }
+        .confirmationDialog(selectedDate?.formatted() ?? "", isPresented: $showAnnotationSheet, titleVisibility: .visible) {
+            Button("Grinding") {
+                measurements.addEvent(Event(date: selectedDate ?? Date(), type: .grinding))
+                selectedDate = nil
+            }
+            Button("Clenching") {
+                measurements.addEvent(Event(date: selectedDate ?? Date(), type: .clenching))
+                selectedDate = nil
+            }
+            Button("Other") {
+                measurements.addEvent(Event(date: selectedDate ?? Date(), type: .other))
+                selectedDate = nil
+            }
+            Button("Cancel", role: .cancel) { }
+        }
+    }
+
+    private var chart: some View {
+        Chart {
+            ForEach(Array(measurements.events.values), id: \.self) { event in
+                RuleMark(x: .value("", event.date))
+                    .foregroundStyle(Color.accent)
+                    .lineStyle(StrokeStyle(lineWidth: 2, dash: [5]))
+                    .annotation(position: .top, overflowResolution: .init(x: .disabled, y: .disabled)) {
+                        Text(event.type.rawValue)
+                            .textStyle(.body(.background))
+                            .padding(6)
+                            .background(Color.accentColor)
+                            .clipShape(Capsule())
+                    }
+            }
+            ForEach(aggregatedData, id: \.self) { data in
+                LineMark(x: .value("", data.date), y: .value("", data.value))
+                    .interpolationMethod(.monotone)
+                    .foregroundStyle(gradient)
+                
+                if let selectedDate {
+                    RuleMark(x: .value("", selectedDate))
+                        .annotation(position: .bottom, overflowResolution: .init(x: .disabled, y: .fit)) {
+                            Text(selectedDate.formatted())
+                                .padding()
+                                .textStyle(.body())
+                                .background(Color.surface)
+                                .clipShape(RoundedRectangle(cornerRadius: 6))
+                                .offset(y: -36)
+                        }
+                        .foregroundStyle(Color.foreground)
+                }
+            }
+        }
+        .chartPlotStyle {
+            $0.padding(.top, 36)
+        }
+        //.chartXSelection(value: $selectedDate)
+        .chartGesture { chartProxy in
+                    SpatialTapGesture().onEnded { value in
+                        selectedDate = chartProxy.value(atX: value.location.x, as: Date.self)
+                    }
+                }
+        .chartScrollableAxes(.horizontal)
+        .chartScrollTargetBehavior(targetBehavior)
+        .chartScrollPosition(initialX: scrollPosition)
+        .chartYAxis(.hidden)
+        //.chartYScale(domain: yDomain)
+        .chartXVisibleDomain(length: visibleDomainLength)
+        //.chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end, range: .plotDimension(padding: 20))
+                
+        .chartXAxis {
+            switch selectedRange {
+            case .hour:
+                AxisMarks(values: dateMarks) { _ in
+                    AxisGridLine()
+                    AxisValueLabel(format: .dateTime.hour().minute())
+                }
+            case .day:
+                AxisMarks(values: dateMarks) { value in
+                    if let date = value.as(Date.self) {
+                        let hour = Calendar.current.component(.hour, from: date)
+                        AxisValueLabel {
+                            VStack(alignment: .leading) {
+                                Text(date, format: .dateTime.hour())
+                                if hour == 0 {
+                                    Text(date, format: .dateTime.month().day())
+                                        .padding(.top, 2)
+                                }
+                            }
+                        }
+                        AxisGridLine()
+                        if hour == 0 {
+                            AxisTick(stroke: StrokeStyle(lineWidth: 0.5))
+                        }
+                    }
+                }
+            case .week:
+                AxisMarks(values: dateMarks) { value in
+                    if let date = value.as(Date.self) {
+                        let weekday = Calendar.current.component(.weekday, from: date)
+                        AxisValueLabel {
+                            VStack(alignment: .leading) {
+                                Text(date, format: .dateTime.weekday())
+                                if weekday == Calendar.current.firstWeekday {
+                                    Text(date, format: .dateTime.month().day())
+                                        .padding(.top, 2)
+                                }
+                            }
+                        }
+                        AxisGridLine()
+                        if weekday == Calendar.current.firstWeekday {
+                            AxisTick(stroke: StrokeStyle(lineWidth: 0.5))
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private var dateMarks: [Date] {
+        guard let start = aggregatedData.first?.date, let end = aggregatedData.last?.date else { return [] }
+        let calendar = Calendar.current
+        
+        switch selectedRange {
+        case .hour:
+            return stride(from: calendar.lowerBound(of: start, minutes: 15), through: calendar.upperBound(of: end, minutes: 15), by: 15 * 60).map { $0 }
+            
+        case .day:
+            return stride(from: calendar.startOfDay(for: start), through: calendar.endOfDay(for: end), by: 2 * 60 * 60).map { $0 }
+            
+        case .week:
+            return stride(from: calendar.startOfWeek(for: start), through: calendar.endOfWeek(for: end), by: 24 * 60 * 60).map { $0 }
+        }
+    }
+    
+    private var visibleDomainLength: Int {
+        switch selectedRange {
+        case .hour:
+            return 2000
+        case .day:
+            return 24 * 2000
+        default:
+            return 7 * 24 * 2000
+        }
+    }
+
+    private func weightedMedian(_ values: [Double]) -> Double {
+        guard !values.isEmpty else { return 0 }
+        
+        let totalWeight = values.reduce(0.0, +)
+        var cumulativeWeight = 0.0
+        
+        for value in values {
+            cumulativeWeight += value
+            if cumulativeWeight >= totalWeight / 2 {
+                return value
+            }
+        }
+        
+        return 0
+    }
+    
+    func aggregateWithWeightedMedian(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> [MeasurementData] {
+        guard !data.isEmpty else { return [] }
+        
+        var result: [MeasurementData] = []
+        var window: [Double] = []
+        var startTime = data.first!.date
+
+        for entry in data {
+            if entry.date.timeIntervalSince(startTime) > interval {
+                if !window.isEmpty {
+                    let aggregatedValue = weightedMedian(window)
+                    result.append(MeasurementData(date: startTime, value: aggregatedValue))
+                }
+                startTime = entry.date
+                window = []
+            }
+            window.append(entry.value)
+        }
+
+        // Process last window
+        if !window.isEmpty {
+            let aggregatedValue = weightedMedian(window)
+            result.append(MeasurementData(date: startTime, value: aggregatedValue))
+        }
+
+        return result
+    }
+}
+
+#Preview {
+    NavigationStack {
+        MuscleActivityChartView()
+            .environment(MeasurementStore())
+    }
+}

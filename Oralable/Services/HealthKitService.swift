@@ -26,7 +26,6 @@ final class LiveHealthKitService: HealthKitService {
     
     func readAge() async -> Int? {
         guard let birthdayComponents = try? healthKit.dateOfBirthComponents() else { return nil }
-        print(birthdayComponents)
         guard let birthday = Calendar.current.date(from: birthdayComponents) else { return nil }
         
         return Calendar.current.dateComponents([.year], from: birthday, to: Date()).year

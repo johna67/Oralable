@@ -15,7 +15,6 @@ final class MockDeviceService: DeviceService {
     private var batteryVoltageContinuation: AsyncStream<Int>.Continuation?
     private var temperatureContinuation: AsyncStream<Double>.Continuation?
 
-    // Lazy AsyncStreams
     lazy var ppg: AsyncStream<PPGFrame> = AsyncStream(bufferingPolicy: .unbounded) { continuation in
         self.ppgContinuation = continuation
     }
@@ -46,7 +45,7 @@ final class MockDeviceService: DeviceService {
                 let timestamp = Date()
 
                 // Emit PPG frame
-                if let ppgContinuation = self.ppgContinuation {
+                if let ppgContinuation {
                     let isRandom = Int.random(in: 1...100) > 70 // 10% random IR
                     let irValue = isRandom
                         ? Int32.random(in: 160_000...350_000)
@@ -56,14 +55,14 @@ final class MockDeviceService: DeviceService {
                     let ppgFrame = PPGFrame(
                         frameCounter: self.ppgFrameCounter,
                         timestamp: timestamp,
-                        avgSample: ppgSample
+                        samples: [ppgSample]
                     )
                     ppgContinuation.yield(ppgFrame)
-                    self.ppgFrameCounter += 1
+                    ppgFrameCounter += 1
                 }
 
                 // Emit accelerometer frame
-                if let accelerometerContinuation = self.accelerometerContinuation {
+                if let accelerometerContinuation {
                     let isRandom = Int.random(in: 1...100) > 90 // 10% random sample
                     let sample: AccelerometerSample
 
@@ -80,10 +79,14 @@ final class MockDeviceService: DeviceService {
                     let accelerometerFrame = AccelerometerFrame(
                         frameCounter: self.accelerometerFrameCounter,
                         timestamp: timestamp,
-                        maxSample: sample
+                        samples: [sample]
                     )
                     accelerometerContinuation.yield(accelerometerFrame)
-                    self.accelerometerFrameCounter += 1
+                    accelerometerFrameCounter += 1
+                }
+                
+                if let temperatureContinuation {
+                    temperatureContinuation.yield(37.0)
                 }
 
                 // Sleep for 0.4 seconds
