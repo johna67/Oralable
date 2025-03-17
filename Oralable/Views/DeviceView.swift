@@ -8,6 +8,7 @@ import SwiftUI
 struct DeviceView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(BluetoothStore.self) private var bluetooth: BluetoothStore
+    @Environment(MeasurementStore.self) private var measurements: MeasurementStore
     @State private var addingDevice: Bool = false
 
     private var statusString: String {
@@ -63,13 +64,21 @@ struct DeviceView: View {
                         .padding(.bottom)
                         HStack {
                             Spacer()
+                            Text("Battery:")
                             Text(Measurement(value: Double(bluetooth.battery ?? 0), unit: UnitElectricPotentialDifference.millivolts).formatted())
-                                .textStyle(.smallBody())
                         }
+                        .padding(.bottom)
+                        HStack {
+                            Spacer()
+                            Text("Temperature:")
+                            Text(Measurement(value: Double(measurements.temperature ?? 0), unit: UnitTemperature.celsius).formatted())
+                        }
+                        .padding(.bottom)
                     }
                     .padding()
                     .background(.surface)
                     .cornerRadius(6)
+                    .textStyle(.smallBody())
                 }
             } else {
                 Spacer()
@@ -116,5 +125,7 @@ extension BluetoothStore.ConnectionStatus {
 }
 
 #Preview {
-    DeviceView().environment(BluetoothStore())
+    DeviceView()
+        .environment(BluetoothStore())
+        .environment(MeasurementStore())
 }

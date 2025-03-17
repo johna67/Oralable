@@ -8,12 +8,6 @@ import Factory
 import Foundation
 import LogKit
 
-private struct ExportData: Codable {
-    let muscleActivityMagnitude: [MeasurementData]
-    let movement: [MeasurementData]
-    let events: [Event]
-}
-
 private actor PersistenceWorker {
     @ObservationIgnored
     @Injected(\.persistenceService) private var persistence
@@ -33,14 +27,22 @@ private actor PersistenceWorker {
 
 @MainActor
 @Observable final class MeasurementStore {
+    enum Status {
+        case inactive, calibrating, active
+    }
     var muscleActivityMagnitude = [MeasurementData]()
     var movement = [MeasurementData]()
+    var status = Status.inactive
     
     var events = [Date: Event]()
     
     var muscleActivityThreshold: Double?
+    var temperature: Double?
+//    var measuring = false // whether the device is on the user's body
     
-    var measuring = false // whether the device is on the user's body
+//    var calibrating: Bool {
+//        measuring && muscleActivityThreshold == nil
+//    }
     
     var thresholdPercentage: Double {
         didSet {
@@ -56,7 +58,7 @@ private actor PersistenceWorker {
     private var subscribed = false
     private var persistenceWorker = PersistenceWorker()
 
-    private let ppgCalibrationFrameCount = 30
+    private let ppgCalibrationFrameCount = 25
     private var ppgFrameReceivedSinceCalibrate = 0
     private let temperatureThreshold = 32.0
 
@@ -72,6 +74,8 @@ private actor PersistenceWorker {
             thresholdPercentage = 0.2
         }
         
+        muscleActivityThreshold = UserDefaults.standard.double(forKey: "muscleActivityThreshold")
+        
         muscleActivityMagnitude = persistence.readPPGFrames(limit: nil).map { $0.convert() }
         movement = persistence.readAccelerometerFrames(limit: nil).map { $0.convert() }
         
@@ -86,10 +90,7 @@ private actor PersistenceWorker {
     
     func exportToFile() -> URL? {
         do {
-            let exportData = ExportData(muscleActivityMagnitude: muscleActivityMagnitude, movement: movement, events: Array(events.values))
-            let encoder = JSONEncoder()
-            encoder.dateEncodingStrategy = .iso8601
-            let jsonData = try encoder.encode(exportData)
+            let jsonData = try persistence.exportAllToJson()
             let tempDir = FileManager.default.temporaryDirectory
             let fileURL = tempDir.appendingPathComponent("Oralable.json")
             try jsonData.write(to: fileURL)
@@ -105,9 +106,50 @@ private actor PersistenceWorker {
         events[event.date] = event
     }
     
-    private func calibrate() {
-        muscleActivityThreshold = nil
-        ppgFrameReceivedSinceCalibrate = 0
+    private func processFrameForCalibration() {
+        ppgFrameReceivedSinceCalibrate += 1
+        if ppgFrameReceivedSinceCalibrate >= ppgCalibrationFrameCount,
+           let maxValue = muscleActivityMagnitude.suffix(ppgCalibrationFrameCount).max(by: { a, b in
+               a.value < b.value
+           }) {
+            muscleActivityThreshold = maxValue.value * (1 + thresholdPercentage)
+            UserDefaults.standard.set(muscleActivityThreshold, forKey: "muscleActivityThreshold")
+            
+            status = .active
+        }
+    }
+    
+    private func processPPG(_ ppg: PPGFrame) {
+        let measurement = ppg.convert()
+        muscleActivityMagnitude.append(measurement)
+        
+        if status == .calibrating {
+            processFrameForCalibration()
+        }
+        
+        if status == .active {
+            Task {
+                await persistenceWorker.writePPGFrame(ppg)
+            }
+        }
+    }
+    
+    private func processAccelerometer(_ accelerometer: AccelerometerFrame) {
+        guard status == .active else { return }
+        Task {
+            await persistenceWorker.writeAccelerometerFrame(accelerometer)
+        }
+    }
+    
+    private func processTemperature(_ temperature: Double) {
+        if temperature >= temperatureThreshold {
+            if status == .inactive {
+                status = .calibrating
+            }
+        } else {
+            status = .inactive
+        }
+        self.temperature = temperature
     }
 
     private func subscribe(_ device: DeviceService) {
@@ -115,44 +157,24 @@ private actor PersistenceWorker {
         subscribed = true
         ppgTask = Task {
             for await ppg in device.ppg {
-                guard measuring else {
-                    calibrate()
+                guard status != .inactive else {
+                    ppgFrameReceivedSinceCalibrate = 0
                     continue
                 }
-                
-                let measurement = ppg.convert()
-                muscleActivityMagnitude.append(measurement)
-                
-                Task {
-                    await persistenceWorker.writePPGFrame(ppg)
-                }
-                
-                if muscleActivityThreshold == nil {
-                    ppgFrameReceivedSinceCalibrate += 1
-                    if ppgFrameReceivedSinceCalibrate >= ppgCalibrationFrameCount,
-                       let maxValue = muscleActivityMagnitude.suffix(ppgCalibrationFrameCount).max(by: { a, b in
-                           a.value < b.value
-                       }) {
-                        muscleActivityThreshold = maxValue.value * (1 + thresholdPercentage)
-                    }
-                }
+                processPPG(ppg)
             }
         }
 
         accelerometerTask = Task {
             for await accelerometer in device.accelerometer {
-                guard measuring else { continue }
-                //let measurement = accelerometer.convert()
-                //movement.append(measurement)
-                Task {
-                    await persistenceWorker.writeAccelerometerFrame(accelerometer)
-                }
+                guard status != .inactive else { continue }
+                processAccelerometer(accelerometer)
             }
         }
         
         temperatureTask = Task {
             for await temperature in device.temperature {
-                measuring = temperature > temperatureThreshold
+                processTemperature(temperature)
             }
         }
     }

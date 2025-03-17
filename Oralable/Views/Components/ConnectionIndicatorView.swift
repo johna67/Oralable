@@ -13,7 +13,6 @@ struct ConnectionIndicatorView: View {
         ZStack {
             if connected {
                 Circle()
-                    .stroke(Color.approve.opacity(0.5), lineWidth: 5)
                     .frame(width: 30)
                     .scaleEffect(ripple ? 1.2 : 0.1)
                     .opacity(ripple ? 0.0 : 0.5)
@@ -24,8 +23,10 @@ struct ConnectionIndicatorView: View {
             }
             
             Circle()
-                .fill(connected ? Color.approve : Color.gray)
                 .frame(width: 10, height: 10)
+        }
+        .onAppear {
+            ripple = connected
         }
         .onChange(of: connected) {
             ripple = connected
@@ -35,4 +36,5 @@ struct ConnectionIndicatorView: View {
 
 #Preview {
     ConnectionIndicatorView(connected: true)
+        .foregroundStyle(Color.approve)
 }

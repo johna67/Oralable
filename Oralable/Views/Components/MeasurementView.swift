@@ -14,9 +14,6 @@ struct MeasurementView: View {
     
     @State private var chartColor: Color = .accent
     
-    private enum Status {
-        case disconnected, live, calibrating
-    }
     private let historySeconds = 30.0
 
     private var data: [MeasurementData] {
@@ -39,21 +36,31 @@ struct MeasurementView: View {
         measurementType == .muscleActivityMagnitude || measurementType == .movement || measurementType == .muscleActivity
     }
     
-    private var status: Status {
-        if bluetooth.status == .connected {
-            return measurements.measuring ? .live : .calibrating
+    private var statusText: String {
+        guard bluetooth.status == .connected else {
+             return "Disconnected"
         }
-        return .disconnected
+        switch measurements.status {
+        case .active:
+            return "Active"
+        case .calibrating:
+            return "Calibrating"
+        case .inactive:
+            return "Inactive"
+        }
     }
     
-    private var statusText: String {
-        switch status {
-        case .disconnected:
-            ""
-        case .live:
-            "Live"
+    private var indicatorColor: Color {
+        guard bluetooth.status == .connected else {
+            return Color.gray
+        }
+        switch measurements.status {
+        case .active:
+            return Color.approve
         case .calibrating:
-            "Calibrating"
+            return Color.warning
+        case .inactive:
+            return Color.warning
         }
     }
     
@@ -116,11 +123,12 @@ struct MeasurementView: View {
                 ConnectionIndicatorView(connected: bluetooth.status == .connected)
                 if bluetooth.status == .connected {
                     Text(statusText)
-                        .textStyle(.body(bluetooth.status.statusColor))
+                        .textStyle(.body(indicatorColor))
                 }
                 
                 Spacer()
             }
+            .foregroundStyle(indicatorColor)
         }
         .padding()
         .background(.surface)
@@ -149,10 +157,5 @@ struct MeasurementView: View {
             .environment(MeasurementStore())
             .environment(BluetoothStore())
             .padding()
-//        
-//        MeasurementView(measurementType: .movement)
-//            .environment(MeasurementStore())
-//            .environment(BluetoothStore())
-//            .padding()
     }
 }

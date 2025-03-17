@@ -22,34 +22,6 @@ protocol DeviceService {
     func start() async throws
 }
 
-struct PPGSample {
-    let red: Int32
-    let ir: Int32
-    let green: Int32
-}
-
-struct PPGFrame {
-    let frameCounter: UInt32
-    let timestamp: Date
-    let samples: [PPGSample]
-}
-
-struct AccelerometerSample {
-    let x: Int16
-    let y: Int16
-    let z: Int16
-
-    func magnitude() -> Double {
-        sqrt(Double(x) * Double(x) + Double(y) * Double(y) + Double(z) * Double(z))
-    }
-}
-
-struct AccelerometerFrame {
-    let frameCounter: UInt32
-    let timestamp: Date
-    let samples: [AccelerometerSample]
-}
-
 final class TGMService: DeviceService {
     let type: DeviceType = .tgm
     let name = "TGM"
@@ -116,13 +88,6 @@ final class TGMService: DeviceService {
         }
 
         Log.info("Successfully discovered characteristics.")
-        
-        do {
-            let batteryData = try await readData(for: batteryCharacteristic)
-            try parseBatteryData(batteryData)
-        } catch {
-            Log.warn("Failed to read battery: \(error)")
-        }
 
         subscribe()
 
@@ -136,9 +101,22 @@ final class TGMService: DeviceService {
                 try await peripheral.setNotifyValue(true, for: characteristic)
             case temperatureId:
                 temperatureCharacteristic = characteristic
+                do {
+                    let tempData = try await readData(for: temperatureCharacteristic)
+                    try parseTemperatureData(tempData)
+                } catch {
+                    Log.warn("Failed to read temperature: \(error)")
+                }
+                
                 try await peripheral.setNotifyValue(true, for: characteristic)
             case batteryId:
                 batteryCharacteristic = characteristic
+                do {
+                    let batteryData = try await readData(for: batteryCharacteristic)
+                    try parseBatteryData(batteryData)
+                } catch {
+                    Log.warn("Failed to read battery: \(error)")
+                }
                 try await peripheral.setNotifyValue(true, for: characteristic)
             default:
                 Log.info("Skipping characteristic \(characteristic.uuid)")

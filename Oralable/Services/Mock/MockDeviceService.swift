@@ -52,12 +52,14 @@ final class MockDeviceService: DeviceService {
                         : 160000
 
                     let ppgSample = PPGSample(red: 254115, ir: irValue, green: 265105)
-                    let ppgFrame = PPGFrame(
+                    let frame = PPGFrame(
                         frameCounter: self.ppgFrameCounter,
                         timestamp: timestamp,
                         samples: [ppgSample]
                     )
-                    ppgContinuation.yield(ppgFrame)
+                    DispatchQueue.main.async {
+                        ppgContinuation.yield(frame)
+                    }
                     ppgFrameCounter += 1
                 }
 
@@ -76,12 +78,14 @@ final class MockDeviceService: DeviceService {
                         sample = AccelerometerSample(x: 112, y: -2548, z: -16024)
                     }
 
-                    let accelerometerFrame = AccelerometerFrame(
+                    let frame = AccelerometerFrame(
                         frameCounter: self.accelerometerFrameCounter,
                         timestamp: timestamp,
                         samples: [sample]
                     )
-                    accelerometerContinuation.yield(accelerometerFrame)
+                    DispatchQueue.main.async {
+                        accelerometerContinuation.yield(frame)
+                    }
                     accelerometerFrameCounter += 1
                 }
                 

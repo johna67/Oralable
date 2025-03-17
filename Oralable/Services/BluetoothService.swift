@@ -49,6 +49,66 @@ final class LiveBluetoothService: BluetoothService {
         pairedDevice = LiveBluetoothService.getPersistedPairedDevice()
     }
     
+    func detectDevice(type: DeviceType) async throws {
+        Log.info("Attempting to detect device \(type)")
+        guard let manager else {
+            throw BluetoothServiceError(message: "Bluetooth not initialized")
+        }
+
+        guard let device = supportedDevices.first(where: { $0.type == type }) else {
+            throw BluetoothServiceError(message: "Device not supported")
+        }
+
+        try await withThrowingTimeout(seconds: connectTimeout) {
+            try await manager.waitUntilReady()
+            let serviceIds = device.serviceIds.map { CBUUID(nsuuid: $0) }
+            //let scanDataStream = try await manager.scanForPeripherals(withServices: serviceIds)
+            let scanDataStream = try await manager.scanForPeripherals(withServices: nil) //TODO: this should be done based on advertised service
+            Log.debug("Will scan for peripheral for \(type) device, with services: \(serviceIds)")
+            
+            for await scanData in scanDataStream {
+                //try await scanData.peripheral.discoverServices(nil)
+                Log.debug("\(scanData.peripheral.name ?? "unknown device")")
+                if scanData.peripheral.name == type.rawValue {
+                    self.peripheral = scanData.peripheral
+                    Log.debug("Found peripheral for \(type) device, \(scanData.peripheral.name ?? "") identifier: \(scanData.peripheral.identifier)")
+                    break
+                }
+            }
+            await manager.stopScan()
+        }
+    }
+
+    func pair(type: DeviceType) async throws {
+        Log.info("Attempting to pair device \(type)")
+
+        guard let peripheral else {
+            throw BluetoothServiceError(message: "Peripheral not yet detected")
+        }
+
+        try await connect(peripheral, type: type, timeout: false)
+    }
+
+    func disconnectDevice() async throws {
+        Log.info("Disconnecting device")
+        if let peripheral {
+            try await manager?.cancelPeripheralConnection(peripheral)
+        }
+        peripheral = nil
+
+        unpair()
+    }
+    
+    func start() async throws {
+        Log.info("Starting bluetooth service")
+
+        await initManager()
+
+        Log.info("Bluetooth service started successfully")
+    }
+}
+
+extension LiveBluetoothService {
     private static func persistPairedDevice(_ device: DeviceDescriptor?) {
         UserDefaults.standard.set(try? JSONEncoder().encode(device), forKey: "pairedDevice")
     }
@@ -218,14 +278,6 @@ final class LiveBluetoothService: BluetoothService {
     }
     
     private func connect(_ peripheral: Peripheral, type: DeviceType, timeout: Bool = true) async throws {
-//        guard !connecting else {
-//            Log.warn("Peripheral already connecting")
-//            return
-//        }
-//
-//        connecting = true
-//        defer { connecting = false }
-
         try await manager?.waitUntilReady()
         do {
             try await withThrowingTimeout(seconds: timeout ? connectTimeout : nil) {
@@ -271,70 +323,12 @@ final class LiveBluetoothService: BluetoothService {
     }
 
     private func deviceType(for peripheral: Peripheral) -> DeviceType? {
-        guard let services = peripheral.discoveredServices else {
-            Log.error("No discovered services on device, cannot determine type")
-            return nil
-        }
+//        guard let services = peripheral.discoveredServices else {
+//            Log.error("No discovered services on device, cannot determine type")
+//            return nil
+//        }
 
         return supportedDevices.first { $0.type.rawValue == peripheral.name }?.type //TODO: this should be based on advertised service not name
-    }
-    
-    func detectDevice(type: DeviceType) async throws {
-        Log.info("Attempting to detect device \(type)")
-        guard let manager else {
-            throw BluetoothServiceError(message: "Bluetooth not initialized")
-        }
-
-        guard let device = supportedDevices.first(where: { $0.type == type }) else {
-            throw BluetoothServiceError(message: "Device not supported")
-        }
-
-        try await withThrowingTimeout(seconds: connectTimeout) {
-            try await manager.waitUntilReady()
-            let serviceIds = device.serviceIds.map { CBUUID(nsuuid: $0) }
-            //let scanDataStream = try await manager.scanForPeripherals(withServices: serviceIds)
-            let scanDataStream = try await manager.scanForPeripherals(withServices: nil) //TODO: this should be done based on advertised service
-            Log.debug("Will scan for peripheral for \(type) device, with services: \(serviceIds)")
-            
-            for await scanData in scanDataStream {
-                //try await scanData.peripheral.discoverServices(nil)
-                Log.debug("\(scanData.peripheral.name ?? "unknown device")")
-                if scanData.peripheral.name == type.rawValue {
-                    self.peripheral = scanData.peripheral
-                    Log.debug("Found peripheral for \(type) device, \(scanData.peripheral.name ?? "") identifier: \(scanData.peripheral.identifier)")
-                    break
-                }
-            }
-            await manager.stopScan()
-        }
-    }
-
-    func pair(type: DeviceType) async throws {
-        Log.info("Attempting to pair device \(type)")
-
-        guard let peripheral else {
-            throw BluetoothServiceError(message: "Peripheral not yet detected")
-        }
-
-        try await connect(peripheral, type: type, timeout: false)
-    }
-
-    func disconnectDevice() async throws {
-        Log.info("Disconnecting device")
-        if let peripheral {
-            try await manager?.cancelPeripheralConnection(peripheral)
-        }
-        peripheral = nil
-
-        unpair()
-    }
-    
-    func start() async throws {
-        Log.info("Starting bluetooth service")
-
-        await initManager()
-
-        Log.info("Bluetooth service started successfully")
     }
 }
 

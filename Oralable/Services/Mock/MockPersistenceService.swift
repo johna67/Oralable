@@ -6,6 +6,10 @@
 import Foundation
 
 final class MockPersistenceService: PersistenceService {
+    func exportAllToJson() throws -> Data {
+        Data()
+    }
+    
     func writeEvent(_ event: Event) {
         
     }
@@ -55,12 +59,12 @@ final class MockPersistenceService: PersistenceService {
                 sample = AccelerometerSample(x: 112, y: -2548, z: -16024)
             }
             
-            let accelerometerFrame = AccelerometerFrame(
+            let AccelerometerFrameModel = AccelerometerFrame(
                 frameCounter: accelerometerFrameCounter,
                 timestamp: timestamp,
                 samples: [sample]
             )
-            accelerometerFrames.append(accelerometerFrame)
+            accelerometerFrames.append(AccelerometerFrameModel)
             accelerometerFrameCounter += 1
             
             let isIRRandomized = Int.random(in: 1...100) > 70
@@ -69,12 +73,12 @@ final class MockPersistenceService: PersistenceService {
                 : 160000
             
             let ppgSample = PPGSample(red: 254115, ir: irValue, green: 265105)
-            let ppgFrame = PPGFrame(
+            let PPGFrameModel = PPGFrame(
                 frameCounter: ppgFrameCounter,
                 timestamp: timestamp,
                 samples: [ppgSample]
             )
-            ppgFrames.append(ppgFrame)
+            ppgFrames.append(PPGFrameModel)
             ppgFrameCounter += 1
         }
         
