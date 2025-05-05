@@ -13,6 +13,7 @@
 		44A79D742C9049A000BD84DD /* OralableTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D732C9049A000BD84DD /* OralableTests.swift */; };
 		44A79D7E2C9049A000BD84DD /* OralableUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D7D2C9049A000BD84DD /* OralableUITests.swift */; };
 		44A79D802C9049A000BD84DD /* OralableUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44A79D7F2C9049A000BD84DD /* OralableUITestsLaunchTests.swift */; };
+		A2E389D82DC251B60047D83F /* AsyncBluetooth in Frameworks */ = {isa = PBXBuildFile; productRef = A2E389D72DC251B60047D83F /* AsyncBluetooth */; };
 		AF2B1CB62D37F7BD002624E4 /* Test.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF2B1CB52D37F7BD002624E4 /* Test.swift */; };
 		AF4C15A82D1D6D4E00AAA005 /* BluetoothService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF4C15A72D1D6D4E00AAA005 /* BluetoothService.swift */; };
 		AF4C15AB2D1D6DA500AAA005 /* AsyncBluetooth in Frameworks */ = {isa = PBXBuildFile; productRef = AF4C15AA2D1D6DA500AAA005 /* AsyncBluetooth */; };
@@ -134,6 +135,7 @@
 			files = (
 				AF4C15B82D23E62C00AAA005 /* Factory in Frameworks */,
 				AF4C15B02D1D709100AAA005 /* LogKit in Frameworks */,
+				A2E389D82DC251B60047D83F /* AsyncBluetooth in Frameworks */,
 				AF4C15AB2D1D6DA500AAA005 /* AsyncBluetooth in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -398,9 +400,9 @@
 			);
 			mainGroup = 44A79D562C90499E00BD84DD;
 			packageReferences = (
-				AF4C15A62D1D6BD700AAA005 /* XCRemoteSwiftPackageReference "AsyncBluetooth" */,
 				AF4C15AE2D1D709100AAA005 /* XCRemoteSwiftPackageReference "logkit" */,
 				AF4C15B62D23E62C00AAA005 /* XCRemoteSwiftPackageReference "Factory" */,
+				A2E389D62DC251B60047D83F /* XCRemoteSwiftPackageReference "AsyncBluetooth" */,
 			);
 			productRefGroup = 44A79D602C90499E00BD84DD /* Products */;
 			projectDirPath = "";
@@ -686,7 +688,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Oralable/Oralable.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"Oralable/Preview Content\"";
 				DEVELOPMENT_TEAM = THKF822TTP;
 				ENABLE_PREVIEWS = YES;
@@ -705,7 +707,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.0;
+				MARKETING_VERSION = 5.13.1;
 				PRODUCT_BUNDLE_IDENTIFIER = teethgrindingmonitor.oralable.com;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -724,7 +726,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Oralable/Oralable.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 10;
+				CURRENT_PROJECT_VERSION = 5;
 				DEVELOPMENT_ASSET_PATHS = "\"Oralable/Preview Content\"";
 				DEVELOPMENT_TEAM = THKF822TTP;
 				ENABLE_PREVIEWS = YES;
@@ -743,7 +745,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 5.0;
+				MARKETING_VERSION = 5.13.1;
 				PRODUCT_BUNDLE_IDENTIFIER = teethgrindingmonitor.oralable.com;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -869,6 +871,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		A2E389D62DC251B60047D83F /* XCRemoteSwiftPackageReference "AsyncBluetooth" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/manolofdez/AsyncBluetooth.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 6.0.0;
+			};
+		};
 		AF4C15A62D1D6BD700AAA005 /* XCRemoteSwiftPackageReference "AsyncBluetooth" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/manolofdez/AsyncBluetooth";
@@ -896,6 +906,11 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		A2E389D72DC251B60047D83F /* AsyncBluetooth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = A2E389D62DC251B60047D83F /* XCRemoteSwiftPackageReference "AsyncBluetooth" */;
+			productName = AsyncBluetooth;
+		};
 		AF4C15AA2D1D6DA500AAA005 /* AsyncBluetooth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = AF4C15A62D1D6BD700AAA005 /* XCRemoteSwiftPackageReference "AsyncBluetooth" */;

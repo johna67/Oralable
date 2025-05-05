@@ -128,6 +128,16 @@ struct MuscleActivityChartView: View {
             SpatialTapGesture().onEnded { value in
                 selectedDate = chartProxy.value(atX: value.location.x, as: Date.self)
             }
+            .simultaneously(with: MagnificationGesture()
+                .onChanged { value in
+                    let delta = value / lastScale
+                    lastScale = value
+                    scale *= delta
+                    scale = max(0.5, min(scale, 5)) // Clamp scale between 0.5x and 5x
+                }
+                .onEnded { _ in
+                    lastScale = 1.0
+                })
         }
         .chartScrollableAxes(.horizontal)
         //.chartScrollTargetBehavior(targetBehavior)
@@ -192,7 +202,7 @@ extension MuscleActivityChartView {
         let minValue = aggregatedData.map { $0.value }.min() ?? 0
         let maxValue = aggregatedData.map { $0.value }.max() ?? 1
         
-        let threshold: Double =  (measurements.muscleActivityThreshold ?? 0.0) / maxValue
+        let threshold: Double = 0.2// (measurements.muscleActivityThreshold ?? 0.0) / maxValue
         
         return LinearGradient(
             gradient: Gradient(stops: [
@@ -254,16 +264,18 @@ extension MuscleActivityChartView {
             return stride(from: calendar.startOfWeek(for: start), through: calendar.endOfWeek(for: end), by: 24 * 60 * 60).map { $0 }
         }
     }
-    
-    private var visibleDomainLength: Int {
+        
+    private var visibleDomainLength: TimeInterval {
+        let baseLength: TimeInterval
         switch selectedRange {
         case .hour:
-            return 2000
+            baseLength = 2000
         case .day:
-            return 24 * 2000
-        default:
-            return 7 * 24 * 2000
+            baseLength = 24 * 2000
+        case .week:
+            baseLength = 7 * 24 * 2000
         }
+        return baseLength / Double(scale)
     }
 
     private func weightedMedian(_ values: [Double]) -> Double {
@@ -282,33 +294,77 @@ extension MuscleActivityChartView {
         return 0
     }
     
-    private func aggregateWithWeightedMedian(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> [MeasurementData] {
+    private func aggregateWithWeightedMedian(_ data: [MeasurementData],
+                                             interval: TimeInterval = 5.0) -> [MeasurementData] {
         guard !data.isEmpty else { return [] }
+        
+        // **Min-Max Normalization:** calculate the min and max of all values
+        let minValue = data.map(\.value).min()!
+        let maxValue = data.map(\.value).max()!
+        // Avoid division by zero: if all values are equal, return a flat normalized series (all 0.0)
+        if maxValue == minValue {
+            return data.map { MeasurementData(date: $0.date, value: 0.0) }
+        }
         
         var result: [MeasurementData] = []
         var window: [Double] = []
         var startTime = data.first!.date
-
+        
         for entry in data {
+            // Normalize the current value to [0, 1] range
+            let normalizedValue = (entry.value - minValue) / (maxValue - minValue)
+            
+            // If the current entry falls outside the current time window, aggregate the window
             if entry.date.timeIntervalSince(startTime) > interval {
                 if !window.isEmpty {
                     let aggregatedValue = weightedMedian(window)
+                    // Use the start of the window as the timestamp for the aggregated value
                     result.append(MeasurementData(date: startTime, value: aggregatedValue))
                 }
+                // Start a new window beginning at this entry's time
                 startTime = entry.date
                 window = []
             }
-            window.append(entry.value)
+            // Add the normalized value to the current window
+            window.append(normalizedValue)
         }
-
-        // Process last window
+        
+        // Process the final window (if any values remain)
         if !window.isEmpty {
             let aggregatedValue = weightedMedian(window)
             result.append(MeasurementData(date: startTime, value: aggregatedValue))
         }
-
+        
         return result
     }
+    
+//    private func aggregateWithWeightedMedian(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> [MeasurementData] {
+//        guard !data.isEmpty else { return [] }
+//        
+//        var result: [MeasurementData] = []
+//        var window: [Double] = []
+//        var startTime = data.first!.date
+//
+//        for entry in data {
+//            if entry.date.timeIntervalSince(startTime) > interval {
+//                if !window.isEmpty {
+//                    let aggregatedValue = weightedMedian(window)
+//                    result.append(MeasurementData(date: startTime, value: aggregatedValue))
+//                }
+//                startTime = entry.date
+//                window = []
+//            }
+//            window.append(entry.value)
+//        }
+//
+//        // Process last window
+//        if !window.isEmpty {
+//            let aggregatedValue = weightedMedian(window)
+//            result.append(MeasurementData(date: startTime, value: aggregatedValue))
+//        }
+//
+//        return result
+//    }
 }
 
 #Preview {
