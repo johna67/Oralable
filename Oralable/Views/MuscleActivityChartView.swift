@@ -22,8 +22,17 @@ struct MuscleActivityChartView: View {
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
     
+    let measurementType: MeasurementType
+    
     private var data: [MeasurementData] {
-        measurements.muscleActivityMagnitude
+        switch measurementType {
+        case .muscleActivityMagnitude:
+            measurements.muscleActivityMagnitude
+        case .movement:
+            measurements.movement
+        default:
+            []
+        }
     }
     
     private enum ChartRange: String, CaseIterable, Identifiable {
@@ -199,10 +208,10 @@ struct MuscleActivityChartView: View {
 
 extension MuscleActivityChartView {
     private var gradient: LinearGradient {
-        let minValue = aggregatedData.map { $0.value }.min() ?? 0
-        let maxValue = aggregatedData.map { $0.value }.max() ?? 1
+//        let minValue = aggregatedData.map { $0.value }.min() ?? 0
+//        let maxValue = aggregatedData.map { $0.value }.max() ?? 1
         
-        let threshold: Double = 0.2// (measurements.muscleActivityThreshold ?? 0.0) / maxValue
+        let threshold: Double = measurements.thresholdPercentage// (measurements.muscleActivityThreshold ?? 0.0) / maxValue
         
         return LinearGradient(
             gradient: Gradient(stops: [
@@ -369,7 +378,7 @@ extension MuscleActivityChartView {
 
 #Preview {
     NavigationStack {
-        MuscleActivityChartView()
+        MuscleActivityChartView(measurementType: .muscleActivityMagnitude)
             .environment(MeasurementStore())
     }
 }

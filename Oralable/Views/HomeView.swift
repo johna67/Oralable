@@ -64,9 +64,9 @@ struct HomeView: View {
                             MeasurementView(measurementType: .muscleActivityMagnitude)
                         }
 
-//                        NavigationLink(value: MeasurementType.movement) {
-//                            MeasurementView(measurementType: .movement)
-//                        }
+                        NavigationLink(value: MeasurementType.movement) {
+                            MeasurementView(measurementType: .movement)
+                        }
 //                        if bluetooth.status == .connected {
 //                            PrimaryButton(title: "Calibrate", progressing: measurements.calibrating, progressingTitle: "Calibrating") {
 //                                measurements.calibrate()
@@ -75,13 +75,7 @@ struct HomeView: View {
                     }
                 }
                 .navigationDestination(for: MeasurementType.self) { type in
-                    switch type {
-                    case .muscleActivityMagnitude:
-                        MuscleActivityChartView()
-                    default:
-                        ChartView(measurementType: type)
-                    }
-
+                    MuscleActivityChartView(measurementType: .muscleActivityMagnitude)
                 }
                 .edgesIgnoringSafeArea(.bottom)
                 Spacer()

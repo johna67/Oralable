@@ -135,6 +135,9 @@ private actor PersistenceWorker {
     }
     
     private func processAccelerometer(_ accelerometer: AccelerometerFrame) {
+        let measurement = accelerometer.convert()
+        movement.append(measurement)
+        
         guard status == .active else { return }
         Task {
             await persistenceWorker.writeAccelerometerFrame(accelerometer)
@@ -218,14 +221,16 @@ extension MeasurementConvertible {
 extension PPGFrame: MeasurementConvertible {
     var value: Double {
 //        guard !samples.isEmpty else { return 0 }
-//        return samples.map { Double($0.ir) }.reduce(0, +) / Double(samples.count)
-        Double(samples.first?.ir ?? 0)
+        return samples.map { Double($0.ir) }.reduce(0, +) / Double(samples.count)
+//        samples.map { Double($0.ir) }.max() ?? 0
+//        Double(samples.first?.ir ?? 0)
     }
 }
 
 extension AccelerometerFrame: MeasurementConvertible {
     var value: Double {
+        return samples.map { $0.magnitude() }.reduce(0, +) / Double(samples.count)
 //        samples.map { $0.magnitude() }.max() ?? 0.0
-        samples.first?.magnitude() ?? 0
+//        samples.first?.magnitude() ?? 0
     }
 }
