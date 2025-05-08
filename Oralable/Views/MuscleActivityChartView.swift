@@ -110,7 +110,7 @@ struct MuscleActivityChartView: View {
             }
             ForEach(aggregatedData, id: \.self) { data in
                 LineMark(x: .value("", data.date), y: .value("", data.value))
-                    //.interpolationMethod(.monotone)
+                //.interpolationMethod(.monotone)
                     .foregroundStyle(gradient)
                 
                 if let selectedDate {
@@ -189,10 +189,10 @@ struct MuscleActivityChartView: View {
                         AxisValueLabel {
                             VStack(alignment: .leading) {
                                 Text(date, format: .dateTime.weekday())
-//                                if weekday == Calendar.current.firstWeekday {
-                                    Text(date, format: .dateTime.month().day())
-                                        .padding(.top, 2)
-//                                }
+                                //                                if weekday == Calendar.current.firstWeekday {
+                                Text(date, format: .dateTime.month().day())
+                                    .padding(.top, 2)
+                                //                                }
                             }
                         }
                         AxisGridLine()
@@ -208,8 +208,8 @@ struct MuscleActivityChartView: View {
 
 extension MuscleActivityChartView {
     private var gradient: LinearGradient {
-//        let minValue = aggregatedData.map { $0.value }.min() ?? 0
-//        let maxValue = aggregatedData.map { $0.value }.max() ?? 1
+        //        let minValue = aggregatedData.map { $0.value }.min() ?? 0
+        //        let maxValue = aggregatedData.map { $0.value }.max() ?? 1
         
         let threshold: Double = measurements.thresholdPercentage// (measurements.muscleActivityThreshold ?? 0.0) / maxValue
         
@@ -273,7 +273,7 @@ extension MuscleActivityChartView {
             return stride(from: calendar.startOfWeek(for: start), through: calendar.endOfWeek(for: end), by: 24 * 60 * 60).map { $0 }
         }
     }
-        
+    
     private var visibleDomainLength: TimeInterval {
         let baseLength: TimeInterval
         switch selectedRange {
@@ -286,7 +286,7 @@ extension MuscleActivityChartView {
         }
         return baseLength / Double(scale)
     }
-
+    
     private func weightedMedian(_ values: [Double]) -> Double {
         guard !values.isEmpty else { return 0 }
         
@@ -303,77 +303,47 @@ extension MuscleActivityChartView {
         return 0
     }
     
-    private func aggregateWithWeightedMedian(_ data: [MeasurementData],
-                                             interval: TimeInterval = 5.0) -> [MeasurementData] {
+    private func aggregateWithWeightedMedian(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> [MeasurementData] {
         guard !data.isEmpty else { return [] }
-        
-        // **Min-Max Normalization:** calculate the min and max of all values
-        let minValue = data.map(\.value).min()!
-        let maxValue = data.map(\.value).max()!
-        // Avoid division by zero: if all values are equal, return a flat normalized series (all 0.0)
-        if maxValue == minValue {
-            return data.map { MeasurementData(date: $0.date, value: 0.0) }
-        }
         
         var result: [MeasurementData] = []
         var window: [Double] = []
         var startTime = data.first!.date
         
         for entry in data {
-            // Normalize the current value to [0, 1] range
-            let normalizedValue = (entry.value - minValue) / (maxValue - minValue)
-            
-            // If the current entry falls outside the current time window, aggregate the window
             if entry.date.timeIntervalSince(startTime) > interval {
                 if !window.isEmpty {
                     let aggregatedValue = weightedMedian(window)
-                    // Use the start of the window as the timestamp for the aggregated value
                     result.append(MeasurementData(date: startTime, value: aggregatedValue))
                 }
-                // Start a new window beginning at this entry's time
                 startTime = entry.date
                 window = []
             }
-            // Add the normalized value to the current window
-            window.append(normalizedValue)
+            window.append(entry.value)
         }
         
-        // Process the final window (if any values remain)
+        // Process last window
         if !window.isEmpty {
             let aggregatedValue = weightedMedian(window)
             result.append(MeasurementData(date: startTime, value: aggregatedValue))
         }
         
-        return result
+        return normalize(result)
     }
     
-//    private func aggregateWithWeightedMedian(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> [MeasurementData] {
-//        guard !data.isEmpty else { return [] }
-//        
-//        var result: [MeasurementData] = []
-//        var window: [Double] = []
-//        var startTime = data.first!.date
-//
-//        for entry in data {
-//            if entry.date.timeIntervalSince(startTime) > interval {
-//                if !window.isEmpty {
-//                    let aggregatedValue = weightedMedian(window)
-//                    result.append(MeasurementData(date: startTime, value: aggregatedValue))
-//                }
-//                startTime = entry.date
-//                window = []
-//            }
-//            window.append(entry.value)
-//        }
-//
-//        // Process last window
-//        if !window.isEmpty {
-//            let aggregatedValue = weightedMedian(window)
-//            result.append(MeasurementData(date: startTime, value: aggregatedValue))
-//        }
-//
-//        return result
-//    }
+    func normalize(_ data: [MeasurementData]) -> [MeasurementData] {
+        guard let minValue = data.map({ $0.value }).min(),
+              let maxValue = data.map({ $0.value }).max(),
+              minValue != maxValue else {
+            
+            return data.map { MeasurementData(date: $0.date, value: 0.0) }
+        }
+        
+        return data.map { measurement in
+            let normalizedValue = (measurement.value - minValue) / (maxValue - minValue)
+            return MeasurementData(date: measurement.date, value: normalizedValue)
+        }
+    }
 }
 
 #Preview {

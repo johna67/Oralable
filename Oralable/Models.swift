@@ -7,6 +7,34 @@ import Foundation
 
 public protocol Model: Hashable, Codable, Sendable {}
 
+struct PPGFrame: Model {
+    let frameCounter: UInt32
+    let timestamp: Date
+    let samples: [PPGSample]
+}
+
+struct PPGSample: Model {
+    let red: Int32
+    let ir: Int32
+    let green: Int32
+}
+
+struct AccelerometerSample: Model {
+    let x: Int16
+    let y: Int16
+    let z: Int16
+    
+    func magnitude() -> Double {
+        sqrt(Double(x) * Double(x) + Double(y) * Double(y) + Double(z) * Double(z))
+    }
+}
+
+struct AccelerometerFrame: Model {
+    let frameCounter: UInt32
+    let timestamp: Date
+    let samples: [AccelerometerSample]
+}
+
 struct MeasurementData: Model {
     let date: Date
     let value: Double

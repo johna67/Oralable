@@ -65,8 +65,16 @@ struct MeasurementView: View {
     }
     
     private var underThreshold: Bool {
-        guard let threshold = measurements.muscleActivityThreshold, let value = data.last?.value else { return true }
-        return value < threshold
+        switch measurementType {
+        case .muscleActivityMagnitude:
+            guard let threshold = measurements.muscleActivityThreshold, let value = data.last?.value else { return true }
+            return value < threshold
+        case .movement:
+            guard let threshold = measurements.movementThreshold, let value = data.last?.value else { return true }
+            return value < threshold
+        default:
+            return false
+        }
     }
 
     private var dateInterval: DateInterval {

@@ -8,16 +8,16 @@ import LogKit
 import SwiftData
 
 private struct ExportData: Codable {
-    let ppg: [PPGFrame]
-    let accelerometer: [AccelerometerFrame]
+    let ppg: [PPGDataPoint]
+    let accelerometer: [AccelerometerDataPoint]
     let events: [EventModel]
 }
 
 protocol PersistenceService {
-    func writePPGFrame(_ frame: PPGFrame)
-    func readPPGFrames(limit: Int?) -> [PPGFrame]
-    func writeAccelerometerFrame(_ frame: AccelerometerFrame)
-    func readAccelerometerFrames(limit: Int?) -> [AccelerometerFrame]
+    func writePPGDataPoint(_ dataPoint: PPGDataPoint)
+    func readPPGDataPoints(limit: Int?) -> [PPGDataPoint]
+    func writeAccelerometerDataPoint(_ dataPoint: AccelerometerDataPoint)
+    func readAccelerometerDataPoints(limit: Int?) -> [AccelerometerDataPoint]
     func readUser() -> User?
     func writeUser(_ user: User)
     func writeEvent(_ event: Event)
@@ -39,13 +39,13 @@ final class EventModel: Codable {
         case timestamp
         case type
     }
-
+    
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         timestamp = try container.decode(Date.self, forKey: .timestamp)
         type = try container.decode(Event.EventType.self, forKey: .type)
     }
-
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(timestamp, forKey: .timestamp)
@@ -54,146 +54,72 @@ final class EventModel: Codable {
 }
 
 @Model
-final class PPGSample: Codable {
-    @Attribute var red: Int32
-    @Attribute var ir: Int32
-    @Attribute var green: Int32
-
-    init(red: Int32, ir: Int32, green: Int32) {
-        self.red = red
-        self.ir = ir
-        self.green = green
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case r, ir, g
-    }
-
-    required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        red = try container.decode(Int32.self, forKey: .r)
-        ir = try container.decode(Int32.self, forKey: .ir)
-        green = try container.decode(Int32.self, forKey: .g)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(red, forKey: .r)
-        try container.encode(ir, forKey: .ir)
-        try container.encode(green, forKey: .g)
-    }
-}
-
-@Model
-final class PPGFrame: Codable {
-    @Attribute var frameCounter: UInt32
+final class PPGDataPoint: Codable {
+    @Attribute var value: Double
     @Attribute var timestamp: Date
-    @Relationship var samples: [PPGSample]
-
-    init(frameCounter: UInt32, timestamp: Date, samples: [PPGSample]) {
-        self.frameCounter = frameCounter
+    
+    init(value: Double, timestamp: Date) {
+        self.value = value
         self.timestamp = timestamp
-        self.samples = samples
     }
-
-    func toPPGFrame() -> PPGFrame {
-        PPGFrame(frameCounter: frameCounter, timestamp: timestamp, samples: samples.map { PPGSample(red: $0.red, ir: $0.ir, green: $0.green) })
+    
+    func toPPGDataPoint() -> PPGDataPoint {
+        PPGDataPoint(value: value, timestamp: timestamp)
     }
-
-    convenience init(_ frame: PPGFrame) {
-        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, samples: frame.samples.map { PPGSample(red: $0.red, ir: $0.ir, green: $0.green) })
+    
+    convenience init(_ dataPoint: PPGDataPoint) {
+        self.init(value: dataPoint.value, timestamp: dataPoint.timestamp)
     }
     
     enum CodingKeys: String, CodingKey {
-        case f, ts, s
-    }
-
-    required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        frameCounter = try container.decode(UInt32.self, forKey: .f)
-        timestamp = try container.decode(Date.self, forKey: .ts)
-        samples = try container.decode([PPGSample].self, forKey: .s)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(frameCounter, forKey: .f)
-        try container.encode(timestamp, forKey: .ts)
-        try container.encode(samples, forKey: .s)
-    }
-}
-
-@Model
-final class AccelerometerSample: Codable {
-    @Attribute var x: Int16
-    @Attribute var y: Int16
-    @Attribute var z: Int16
-
-    init(x: Int16, y: Int16, z: Int16) {
-        self.x = x
-        self.y = y
-        self.z = z
+        case value, timestamp
     }
     
-    enum CodingKeys: String, CodingKey {
-        case x, y, z
-    }
-
     required init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        x = try container.decode(Int16.self, forKey: .x)
-        y = try container.decode(Int16.self, forKey: .y)
-        z = try container.decode(Int16.self, forKey: .z)
-    }
-
-    func encode(to encoder: Encoder) throws {
-        var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(x, forKey: .x)
-        try container.encode(y, forKey: .y)
-        try container.encode(z, forKey: .z)
-    }
-    
-    func magnitude() -> Double {
-        sqrt(Double(x) * Double(x) + Double(y) * Double(y) + Double(z) * Double(z))
-    }
-}
-
-@Model
-final class AccelerometerFrame: Codable {
-    @Attribute var frameCounter: UInt32
-    @Attribute var timestamp: Date
-    @Relationship var samples: [AccelerometerSample]
-
-    init(frameCounter: UInt32, timestamp: Date, samples: [AccelerometerSample]) {
-        self.frameCounter = frameCounter
-        self.timestamp = timestamp
-        self.samples = samples
-    }
-
-    convenience init(_ frame: AccelerometerFrame) {
-        self.init(frameCounter: frame.frameCounter, timestamp: frame.timestamp, samples: frame.samples.map { AccelerometerSample(x: $0.x, y: $0.y, z: $0.z) })
-    }
-
-    func toAccelerometerFrame() -> AccelerometerFrame {
-        AccelerometerFrame(frameCounter: frameCounter, timestamp: timestamp, samples: samples.map { AccelerometerSample(x: $0.x, y: $0.y, z: $0.z) })
-    }
-    
-    enum CodingKeys: String, CodingKey {
-        case frameCounter, timestamp, samples
-    }
-
-    required init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        frameCounter = try container.decode(UInt32.self, forKey: .frameCounter)
+        value = try container.decode(Double.self, forKey: .value)
         timestamp = try container.decode(Date.self, forKey: .timestamp)
-        samples = try container.decode([AccelerometerSample].self, forKey: .samples)
     }
-
+    
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
-        try container.encode(frameCounter, forKey: .frameCounter)
+        try container.encode(value, forKey: .value)
         try container.encode(timestamp, forKey: .timestamp)
-        try container.encode(samples, forKey: .samples)
+    }
+}
+
+@Model
+final class AccelerometerDataPoint: Codable {
+    @Attribute var value: Double
+    @Attribute var timestamp: Date
+    
+    init(value: Double, timestamp: Date) {
+        self.value = value
+        self.timestamp = timestamp
+    }
+    
+    convenience init(_ dataPoint: AccelerometerDataPoint) {
+        self.init(value: dataPoint.value, timestamp: dataPoint.timestamp)
+    }
+    
+    func toAccelerometerDataPoint() -> AccelerometerDataPoint {
+        AccelerometerDataPoint(value: value, timestamp: timestamp)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case value, timestamp
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        value = try container.decode(Double.self, forKey: .value)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(value, forKey: .value)
+        try container.encode(timestamp, forKey: .timestamp)
     }
 }
 
@@ -212,14 +138,12 @@ final class UserModel {
 
 final class SwiftDataPersistence: PersistenceService {
     private var container: ModelContainer!
-
+    
     init() {
         do {
             container = try ModelContainer(
-                for: PPGFrame.self,
-                AccelerometerFrame.self,
-                PPGSample.self,
-                AccelerometerSample.self,
+                for: PPGDataPoint.self,
+                AccelerometerDataPoint.self,
                 UserModel.self,
                 EventModel.self
             )
@@ -227,37 +151,35 @@ final class SwiftDataPersistence: PersistenceService {
             Log.error("Failed to initialize persistence: \(error)")
         }
     }
-
-    func writePPGFrame(_ frame: PPGFrame) {
-        write(PPGFrame(frame))
+    
+    func writePPGDataPoint(_ dataPoint: PPGDataPoint) {
+        write(PPGDataPoint(dataPoint))
     }
-
-    func writeAccelerometerFrame(_ frame: AccelerometerFrame) {
-        write(AccelerometerFrame(frame))
+    
+    func writeAccelerometerDataPoint(_ dataPoint: AccelerometerDataPoint) {
+        write(AccelerometerDataPoint(dataPoint))
     }
-
-    func readPPGFrames(limit: Int? = nil) -> [PPGFrame] {
-        let frames: [PPGFrame]
+    
+    func readPPGDataPoints(limit: Int? = nil) -> [PPGDataPoint] {
+        let frames: [PPGDataPoint]
         if let limit {
-            frames = readAll(PPGFrame.self, sortBy: SortDescriptor(\.timestamp, order: .reverse), limit: limit).reversed()
+            frames = readAll(PPGDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .reverse), limit: limit).reversed()
         } else {
-            frames = readAll(PPGFrame.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
-        }
-        
-        //return frames.map { $0.toPPGFrame() }
-        return frames
-    }
-
-    func readAccelerometerFrames(limit: Int? = nil) -> [AccelerometerFrame] {
-        let frames: [AccelerometerFrame]
-        if let limit {
-            frames = readAll(AccelerometerFrame.self, sortBy: SortDescriptor(\.timestamp, order: .reverse), limit: limit).reversed()
-        } else {
-            frames = readAll(AccelerometerFrame.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
+            frames = readAll(PPGDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
         }
         
         return frames
-        //return frames.map { $0.toAccelerometerFrame() }
+    }
+    
+    func readAccelerometerDataPoints(limit: Int? = nil) -> [AccelerometerDataPoint] {
+        let frames: [AccelerometerDataPoint]
+        if let limit {
+            frames = readAll(AccelerometerDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .reverse), limit: limit).reversed()
+        } else {
+            frames = readAll(AccelerometerDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
+        }
+        
+        return frames
     }
     
     func writeUser(_ user: User) {
@@ -280,8 +202,8 @@ final class SwiftDataPersistence: PersistenceService {
     }
     
     func exportAllToJson() throws -> Data {
-        let ppg = readAll(PPGFrame.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
-        let accelerometer = readAll(AccelerometerFrame.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
+        let ppg = readAll(PPGDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
+        let accelerometer = readAll(AccelerometerDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
         let events = readAll(EventModel.self)
         
         let exportData = ExportData(ppg: ppg, accelerometer: accelerometer, events: events)
@@ -305,11 +227,11 @@ final class SwiftDataPersistence: PersistenceService {
         let context = ModelContext(container)
         do {
             var fetchDescriptor = FetchDescriptor<T>()
-
+            
             if let sortBy = sortBy {
                 fetchDescriptor.sortBy = [sortBy]
             }
-
+            
             if let limit = limit {
                 fetchDescriptor.fetchLimit = limit
             }
@@ -319,7 +241,7 @@ final class SwiftDataPersistence: PersistenceService {
             return []
         }
     }
-
+    
     private func write(_ model: any PersistentModel) {
         let context = ModelContext(container)
         context.insert(model)
@@ -330,3 +252,7 @@ final class SwiftDataPersistence: PersistenceService {
         }
     }
 }
+
+extension PPGDataPoint: @unchecked Sendable {}
+extension AccelerometerDataPoint: @unchecked Sendable {}
+extension EventModel: @unchecked Sendable {}

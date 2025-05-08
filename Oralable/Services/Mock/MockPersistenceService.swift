@@ -29,9 +29,9 @@ final class MockPersistenceService: PersistenceService {
         
     }
     
-    private var accelerometerFrames: [AccelerometerFrame]
-    private var ppgFrames: [PPGFrame]
-        
+    private var accelerometerDataPoints: [AccelerometerDataPoint]
+    private var ppgDataPoints: [PPGDataPoint]
+    
     private var accelerometerFrameCounter: UInt32 = 26687
     private var ppgFrameCounter: UInt32 = 33318
     
@@ -40,8 +40,8 @@ final class MockPersistenceService: PersistenceService {
         let interval = 0.4
         let startTime = Date()
         
-        accelerometerFrames = []
-        ppgFrames = []
+        accelerometerDataPoints = []
+        ppgDataPoints = []
         
         for i in 0..<totalFrames {
             let timestamp = startTime.addingTimeInterval(-Double(i) * interval)
@@ -64,13 +64,14 @@ final class MockPersistenceService: PersistenceService {
                 timestamp: timestamp,
                 samples: [sample]
             )
-            accelerometerFrames.append(AccelerometerFrameModel)
+            
+            accelerometerDataPoints.append(AccelerometerFrameModel.convertToDataPoint())
             accelerometerFrameCounter += 1
             
             let isIRRandomized = Int.random(in: 1...100) > 70
             let irValue = isIRRandomized
-                ? Int32.random(in: 160000...3_500_000)
-                : 160000
+            ? Int32.random(in: 160000...3_500_000)
+            : 160000
             
             let ppgSample = PPGSample(red: 254115, ir: irValue, green: 265105)
             let PPGFrameModel = PPGFrame(
@@ -78,33 +79,33 @@ final class MockPersistenceService: PersistenceService {
                 timestamp: timestamp,
                 samples: [ppgSample]
             )
-            ppgFrames.append(PPGFrameModel)
+            ppgDataPoints.append(PPGFrameModel.convertToDataPoint())
             ppgFrameCounter += 1
         }
         
-        accelerometerFrames.reverse()
-        ppgFrames.reverse()
+        accelerometerDataPoints.reverse()
+        ppgDataPoints.reverse()
     }
     
-    func writePPGFrame(_ frame: PPGFrame) {
-            ppgFrames.append(frame)
+    func writePPGDataPoint(_ dataPoint: PPGDataPoint) {
+        ppgDataPoints.append(dataPoint)
+    }
+    
+    func readPPGDataPoints(limit: Int?) -> [PPGDataPoint] {
+        if let limit {
+            return Array(ppgDataPoints.suffix(limit))
         }
-        
-        func readPPGFrames(limit: Int?) -> [PPGFrame] {
-            if let limit {
-                return Array(ppgFrames.suffix(limit))
-            }
-            return ppgFrames
+        return ppgDataPoints
+    }
+    
+    func writeAccelerometerDataPoint(_ dataPoint: AccelerometerDataPoint) {
+        accelerometerDataPoints.append(dataPoint)
+    }
+    
+    func readAccelerometerDataPoints(limit: Int?) -> [AccelerometerDataPoint] {
+        if let limit {
+            return Array(accelerometerDataPoints.suffix(limit))
         }
-        
-        func writeAccelerometerFrame(_ frame: AccelerometerFrame) {
-            accelerometerFrames.append(frame)
-        }
-        
-        func readAccelerometerFrames(limit: Int?) -> [AccelerometerFrame] {
-            if let limit {
-                return Array(accelerometerFrames.suffix(limit))
-            }
-            return accelerometerFrames
-        }
+        return accelerometerDataPoints
+    }
 }
