@@ -56,26 +56,16 @@ struct HomeView: View {
                     .padding([.top, .bottom])
                 ScrollView {
                     VStack(spacing: 20) {
-                        if measurements.muscleActivityThreshold != nil {
-                            NavigationLink(value: MeasurementType.muscleActivityMagnitude) {
-                                MeasurementView(measurementType: .muscleActivityMagnitude)
-                            }
-                        } else {
+                        NavigationLink(value: MeasurementType.muscleActivityMagnitude) {
                             MeasurementView(measurementType: .muscleActivityMagnitude)
                         }
-
                         NavigationLink(value: MeasurementType.movement) {
                             MeasurementView(measurementType: .movement)
                         }
-//                        if bluetooth.status == .connected {
-//                            PrimaryButton(title: "Calibrate", progressing: measurements.calibrating, progressingTitle: "Calibrating") {
-//                                measurements.calibrate()
-//                            }
-//                        }
                     }
                 }
                 .navigationDestination(for: MeasurementType.self) { type in
-                    MuscleActivityChartView(measurementType: .muscleActivityMagnitude)
+                    MuscleActivityChartView(measurementType: type)
                 }
                 .edgesIgnoringSafeArea(.bottom)
                 Spacer()

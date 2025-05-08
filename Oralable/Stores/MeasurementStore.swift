@@ -89,6 +89,7 @@ private actor PersistenceWorker {
         muscleActivityThreshold = UserDefaults.standard.double(forKey: "muscleActivityThreshold")
         movementThreshold = UserDefaults.standard.double(forKey: "movementThreshold")
         
+        status = .calibrating
         Task.detached(priority: .userInitiated) { [weak self] in
             await self?.loadInitialData()
         }
@@ -108,10 +109,13 @@ private actor PersistenceWorker {
         let (ppg, acc, evts) = await (ppgPoints, accPoints, evtArray)
         
         await MainActor.run {
-            self.muscleActivityMagnitude = ppg.map { $0.convert() }
-            self.movement = acc.map { $0.convert() }
-            self.events = Dictionary( uniqueKeysWithValues: evts.map { ($0.date, $0) }
-            )
+            self.muscleActivityMagnitude.insert(contentsOf: ppg.map { $0.convert() }, at: 0)
+            self.movement.insert(contentsOf: acc.map { $0.convert() }, at: 0)
+            self.events = Dictionary( uniqueKeysWithValues: evts.map { ($0.date, $0) })
+            
+            if temperature ?? 0 >= temperatureThreshold {
+                status = .active
+            }
         }
     }
     
@@ -134,15 +138,15 @@ private actor PersistenceWorker {
     }
     
     private func processPPG(_ ppg: PPGFrame) {
+        guard status == .active else { return }
+        
         let dataPoint = ppg.convertToDataPoint()
         muscleActivityMagnitude.append(dataPoint.convert())
         
         recalibrateMuscleActivityWith(dataPoint)
-        
-        if status == .active {
-            Task {
-                await persistenceWorker.writePPGDataPoint(dataPoint)
-            }
+    
+        Task {
+            await persistenceWorker.writePPGDataPoint(dataPoint)
         }
     }
     
@@ -157,12 +161,13 @@ private actor PersistenceWorker {
     }
     
     private func processAccelerometer(_ accelerometer: AccelerometerFrame) {
+        guard status == .active else { return }
+        
         let dataPoint = accelerometer.convertToDataPoint()
         movement.append(dataPoint.convert())
         
         recalibrateMovementWith(dataPoint)
-        
-        guard status == .active else { return }
+
         Task {
             await persistenceWorker.writeAccelerometerDataPoint(dataPoint)
         }
@@ -260,13 +265,13 @@ extension AccelerometerDataPoint: MeasurementConvertible {
     
 }
 
-extension PPGFrame{
+extension PPGFrame {
     func convertToDataPoint() -> PPGDataPoint {
         PPGDataPoint(value: samples.map { Double($0.ir) }.reduce(0, +) / Double(samples.count), timestamp: timestamp)
     }
 }
 
-extension AccelerometerFrame{
+extension AccelerometerFrame {
     func convertToDataPoint() -> AccelerometerDataPoint {
         AccelerometerDataPoint(value: samples.map { $0.magnitude() }.reduce(0, +) / Double(samples.count), timestamp: timestamp)
     }

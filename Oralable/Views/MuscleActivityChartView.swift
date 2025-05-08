@@ -152,7 +152,7 @@ struct MuscleActivityChartView: View {
         //.chartScrollTargetBehavior(targetBehavior)
         .chartScrollPosition(initialX: scrollPosition)
         .chartYAxis(.hidden)
-        //.chartYScale(domain: yDomain)
+        .chartYScale(domain: yDomain)
         .chartXVisibleDomain(length: visibleDomainLength)
         //.chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end, range: .plotDimension(padding: 20))
         
@@ -208,10 +208,7 @@ struct MuscleActivityChartView: View {
 
 extension MuscleActivityChartView {
     private var gradient: LinearGradient {
-        //        let minValue = aggregatedData.map { $0.value }.min() ?? 0
-        //        let maxValue = aggregatedData.map { $0.value }.max() ?? 1
-        
-        let threshold: Double = measurements.thresholdPercentage// (measurements.muscleActivityThreshold ?? 0.0) / maxValue
+        let threshold: Double = measurements.thresholdPercentage
         
         return LinearGradient(
             gradient: Gradient(stops: [
@@ -245,17 +242,11 @@ extension MuscleActivityChartView {
     }
     
     private var yDomain: ClosedRange<Double> {
-        guard let range = aggregatedData.range(by: { a, b in
-            a.value < b.value
-        }) else {
-            return 0...0
-        }
-        return (range.min.value / 1.1)...(range.max.value * 1.1)
+        return -0.1...1.1
     }
     
     private var scrollPosition: Double {
         aggregatedData.last?.date.timeIntervalSinceReferenceDate ?? Date().timeIntervalSinceReferenceDate
-        //Date().timeIntervalSinceReferenceDate
     }
     
     private var dateMarks: [Date] {
@@ -338,11 +329,11 @@ extension MuscleActivityChartView {
             
             return data.map { MeasurementData(date: $0.date, value: 0.0) }
         }
-        
-        return data.map { measurement in
+        let normalized = data.map { measurement in
             let normalizedValue = (measurement.value - minValue) / (maxValue - minValue)
             return MeasurementData(date: measurement.date, value: normalizedValue)
         }
+        return normalized
     }
 }
 
