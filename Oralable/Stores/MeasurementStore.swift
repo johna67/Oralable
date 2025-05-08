@@ -115,6 +115,8 @@ private actor PersistenceWorker {
             
             if temperature ?? 0 >= temperatureThreshold {
                 status = .active
+            } else {
+                status = .inactive
             }
         }
     }
@@ -189,7 +191,9 @@ private actor PersistenceWorker {
                 status = .active
             }
         } else {
-            status = .inactive
+            if status == .active {
+                status = .inactive
+            }
         }
         self.temperature = temperature
     }
