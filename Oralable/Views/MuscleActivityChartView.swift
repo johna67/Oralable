@@ -15,6 +15,10 @@ struct MuscleActivityChartView: View {
     @State private var dailyData = [MeasurementData]()
     @State private var weeklyData = [MeasurementData]()
     
+    @State private var hourlyThreshold: Double = 0
+    @State private var dailyThreshold: Double = 0
+    @State private var weeklyThreshold: Double = 0
+    
     @State private var showAnnotationSheet = false
     
     @State private var selectedDate: Date?
@@ -62,9 +66,17 @@ struct MuscleActivityChartView: View {
             UISegmentedControl.appearance().selectedSegmentTintColor = .background
             UISegmentedControl.appearance().backgroundColor = .surface
             
-            hourlyData = aggregateWithWeightedMedian(data, interval: 20)
-            dailyData = aggregateWithWeightedMedian(data, interval: 24 * 20.0)
-            weeklyData = aggregateWithWeightedMedian(data, interval: 7 * 24 * 20.0)
+            let hourlyTouple = aggregateWithWeightedMedian(data, interval: 5)
+            hourlyData = hourlyTouple.0
+            hourlyThreshold = hourlyTouple.1
+            
+            let dailyTouple = aggregateWithWeightedMedian(data, interval: 24 * 5)
+            dailyData = dailyTouple.0
+            dailyThreshold = dailyTouple.1
+            
+            let weeklyTouple = aggregateWithWeightedMedian(data, interval: 7 * 24 * 5)
+            weeklyData = weeklyTouple.0
+            weeklyThreshold = weeklyTouple.1
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -109,7 +121,7 @@ struct MuscleActivityChartView: View {
                     }
             }
             ForEach(aggregatedData, id: \.self) { data in
-                LineMark(x: .value("", data.date), y: .value("", data.value))
+                LineMark(x: .value("", data.date), y: .value("", data.value == -1 ? Double.nan : data.value))
                 //.interpolationMethod(.monotone)
                     .foregroundStyle(gradient)
                 
@@ -208,7 +220,15 @@ struct MuscleActivityChartView: View {
 
 extension MuscleActivityChartView {
     private var gradient: LinearGradient {
-        let threshold: Double = measurements.thresholdPercentage
+        var threshold: Double
+        switch selectedRange {
+        case .hour:
+            threshold = hourlyThreshold
+        case .day:
+            threshold = dailyThreshold
+        case .week:
+            threshold = weeklyThreshold
+        }
         
         return LinearGradient(
             gradient: Gradient(stops: [
@@ -269,11 +289,11 @@ extension MuscleActivityChartView {
         let baseLength: TimeInterval
         switch selectedRange {
         case .hour:
-            baseLength = 2000
+            baseLength = 500
         case .day:
-            baseLength = 24 * 2000
+            baseLength = 24 * 500
         case .week:
-            baseLength = 7 * 24 * 2000
+            baseLength = 7 * 24 * 500
         }
         return baseLength / Double(scale)
     }
@@ -294,8 +314,33 @@ extension MuscleActivityChartView {
         return 0
     }
     
-    private func aggregateWithWeightedMedian(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> [MeasurementData] {
-        guard !data.isEmpty else { return [] }
+//    func aggregateWithWeightedMedian(_ raw: [MeasurementData], interval: TimeInterval = 5.0) -> ([MeasurementData], Double) {
+//        guard let first = raw.first, let last = raw.last else { return ([], 0) }
+//
+//        var store: [Int:[Double]] = [:]
+//        for m in raw {
+//            let idx = Int(m.date.timeIntervalSince(first.date) / interval)
+//            store[idx, default: []].append(m.value)
+//        }
+//
+//        var result: [MeasurementData] = []
+//        let lastIdx = Int(last.date.timeIntervalSince(first.date) / interval)
+//
+//        for idx in 0...lastIdx {
+//            let bucketStart = first.date.addingTimeInterval(Double(idx) * interval)
+//            if let samples = store[idx] {
+//                result.append(.init(date: bucketStart,
+//                                    value: weightedMedian(samples)))
+//            } else {
+//                result.append(.init(date: bucketStart, value: nil))
+//            }
+//        }
+//
+//        return normalise(result)
+//    }
+    
+    private func aggregateWithWeightedMedian(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> ([MeasurementData], Double) {
+        guard !data.isEmpty else { return ([], 0) }
         
         var result: [MeasurementData] = []
         var window: [Double] = []
@@ -319,21 +364,68 @@ extension MuscleActivityChartView {
             result.append(MeasurementData(date: startTime, value: aggregatedValue))
         }
         
-        return normalize(result)
+        let normalized = normalize(data)
+        
+        return (fillMissingIntervals(normalized.0, interval: interval), normalized.1)
     }
     
-    func normalize(_ data: [MeasurementData]) -> [MeasurementData] {
+    func normalize(_ data: [MeasurementData]) -> ([MeasurementData], Double) {
         guard let minValue = data.map({ $0.value }).min(),
               let maxValue = data.map({ $0.value }).max(),
               minValue != maxValue else {
             
-            return data.map { MeasurementData(date: $0.date, value: 0.0) }
+            return (data.map { MeasurementData(date: $0.date, value: 0.0) }, 0)
         }
         let normalized = data.map { measurement in
             let normalizedValue = (measurement.value - minValue) / (maxValue - minValue)
             return MeasurementData(date: measurement.date, value: normalizedValue)
         }
-        return normalized
+        
+        var threshold = measurements.thresholdPercentage
+        switch measurementType {
+        case .muscleActivityMagnitude:
+            if let thresholdValue = measurements.muscleActivityThreshold {
+                threshold = (thresholdValue - minValue) / (maxValue - minValue) * (1 + measurements.thresholdPercentage)
+            }
+        case .movement:
+            if let thresholdValue = measurements.movementThreshold {
+                threshold = (thresholdValue - minValue) / (maxValue - minValue) * (1 + measurements.thresholdPercentage)
+            }
+        default:
+            break
+        }
+        
+        return (normalized, threshold)
+    }
+    
+    func fillMissingIntervals(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> [MeasurementData] {
+        guard !data.isEmpty else { return [] }
+
+        let sorted = data.sorted { $0.date < $1.date }
+
+        let firstDate = sorted.first!.date
+        let lastDate  = sorted.last!.date
+        let lastIdx   = Int(round(lastDate.timeIntervalSince(firstDate) / interval))
+
+        var bucketDict: [Int: MeasurementData] = [:]
+        for m in sorted {
+            let idx = Int(round(m.date.timeIntervalSince(firstDate) / interval))
+            bucketDict[idx] = m
+        }
+
+        var filled: [MeasurementData] = []
+        filled.reserveCapacity(lastIdx + 1)
+
+        for idx in 0...lastIdx {
+            if let m = bucketDict[idx] {
+                filled.append(m)
+            } else {
+                let bucketDate = firstDate.addingTimeInterval(Double(idx) * interval)
+                filled.append(MeasurementData(date: bucketDate, value: -1))
+            }
+        }
+
+        return filled
     }
 }
 

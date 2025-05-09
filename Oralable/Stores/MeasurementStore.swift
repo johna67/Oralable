@@ -86,6 +86,7 @@ private actor PersistenceWorker {
         if thresholdPercentage == 0 {
             thresholdPercentage = 0.2
         }
+        
         muscleActivityThreshold = UserDefaults.standard.double(forKey: "muscleActivityThreshold")
         movementThreshold = UserDefaults.standard.double(forKey: "movementThreshold")
         

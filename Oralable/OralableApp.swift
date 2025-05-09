@@ -10,12 +10,16 @@ import SwiftUI
 
 @main
 struct OralableApp: App {
+    private let measurementStore = MeasurementStore()
+    private let bluetoothStore = BluetoothStore()
+    private let userStore = UserStore()
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environment(MeasurementStore())
-                .environment(BluetoothStore())
-                .environment(UserStore())
+                .environment(measurementStore)
+                .environment(bluetoothStore)
+                .environment(userStore)
         }
     }
 }

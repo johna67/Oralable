@@ -68,10 +68,10 @@ struct MeasurementView: View {
         switch measurementType {
         case .muscleActivityMagnitude:
             guard let threshold = measurements.muscleActivityThreshold, let value = data.last?.value else { return true }
-            return value < threshold
+            return value < threshold * (1 + measurements.thresholdPercentage)
         case .movement:
             guard let threshold = measurements.movementThreshold, let value = data.last?.value else { return true }
-            return value < threshold
+            return value < threshold * (1 + measurements.thresholdPercentage)
         default:
             return false
         }
