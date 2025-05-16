@@ -27,40 +27,70 @@ struct MeasurementView: View {
             return Array(measurements.movement.suffix {
                 $0.date >= now.addingTimeInterval(-historySeconds)
             })
+        case .emg:
+            return Array(measurements.emg.suffix {
+                $0.date >= now.addingTimeInterval(-historySeconds)
+            })
         default:
             return []
         }
     }
 
     private var measurementHidden: Bool {
-        measurementType == .muscleActivityMagnitude || measurementType == .movement || measurementType == .muscleActivity
+        measurementType == .muscleActivityMagnitude || measurementType == .movement || measurementType == .emg
+    }
+    
+    func getCurrentDevice() -> DeviceDescriptor? {
+        var device: DeviceDescriptor?
+        switch measurementType {
+        case .muscleActivityMagnitude:
+            device = bluetooth.pairedDevices.first(where: {$0.type == .tgm})
+        case .movement:
+            device = bluetooth.pairedDevices.first(where: {$0.type == .tgm})
+        case .emg:
+            device = bluetooth.pairedDevices.first(where: {$0.type == .anr})
+        default:
+            break
+        }
+        
+        return device
     }
     
     private var statusText: String {
-        guard bluetooth.status == .connected else {
+        guard let device = getCurrentDevice(), bluetooth.statuses[device.peripheralId] == .connected else {
              return "Disconnected"
         }
-        switch measurements.status {
-        case .active:
-            return "Active"
-        case .calibrating:
-            return "Calibrating"
-        case .inactive:
-            return "Inactive"
+        switch device.type {
+        case .anr:
+            return "Transmitting"
+        case .tgm:
+            switch measurements.status {
+            case .active:
+                return "Active"
+            case .calibrating:
+                return "Calibrating"
+            case .inactive:
+                return "Inactive"
+            }
         }
     }
     
     private var indicatorColor: Color {
-        guard bluetooth.status == .connected else {
+        guard let device = getCurrentDevice(), bluetooth.statuses[device.peripheralId] == .connected else {
             return Color.gray
         }
-        switch measurements.status {
-        case .active:
+        switch device.type {
+        case .anr:
             return Color.approve
-        case .calibrating:
-            return Color.warning
-        case .inactive:
-            return Color.warning
+        case .tgm:
+            switch measurements.status {
+            case .active:
+                return Color.approve
+            case .calibrating:
+                return Color.warning
+            case .inactive:
+                return Color.warning
+            }
         }
     }
     
@@ -71,6 +101,9 @@ struct MeasurementView: View {
             return value < threshold * (1 + measurements.thresholdPercentage)
         case .movement:
             guard let threshold = measurements.movementThreshold, let value = data.last?.value else { return true }
+            return value < threshold * (1 + measurements.thresholdPercentage)
+        case .emg:
+            guard let threshold = measurements.emgThreshold, let value = data.last?.value else { return true }
             return value < threshold * (1 + measurements.thresholdPercentage)
         default:
             return false
@@ -128,8 +161,14 @@ struct MeasurementView: View {
                     .frame(height: 80)
             }
             HStack {
-                ConnectionIndicatorView(connected: bluetooth.status == .connected)
-                if bluetooth.status == .connected {
+                if let device = getCurrentDevice() {
+                    ConnectionIndicatorView(connected: bluetooth.statuses[device.peripheralId] == .connected)
+                    if bluetooth.statuses[device.peripheralId] == .connected {
+                        Text(statusText)
+                            .textStyle(.body(indicatorColor))
+                    }
+                } else {
+                    ConnectionIndicatorView(connected: false)
                     Text(statusText)
                         .textStyle(.body(indicatorColor))
                 }
@@ -156,14 +195,5 @@ struct MeasurementView: View {
         .chartYScale(domain: yDomain)
         .chartXAxis(.hidden)
         .chartYAxis(.hidden)
-    }
-}
-
-#Preview {
-    ScrollView {
-        MeasurementView(measurementType: .muscleActivityMagnitude)
-            .environment(MeasurementStore())
-            .environment(BluetoothStore())
-            .padding()
     }
 }

@@ -22,6 +22,10 @@ private actor PersistenceReader {
     func readEvents() -> [Event] {
         persistence.readEvents(limit: nil)
     }
+    
+    func readEMG() -> [EMGDataPoint] {
+        persistence.readEMGDataPoints(limit: nil)
+    }
 }
 
 private actor PersistenceWorker {
@@ -34,6 +38,10 @@ private actor PersistenceWorker {
     
     func writePPGDataPoint(_ dataPoint: PPGDataPoint) {
         persistence.writePPGDataPoint(dataPoint)
+    }
+    
+    func writeEMGDataPoint(_ dataPoint: EMGDataPoint) {
+        persistence.writeEMGDataPoint(dataPoint)
     }
     
     func writeEvent(_ event: Event) {
@@ -52,10 +60,12 @@ private actor PersistenceWorker {
     
     var muscleActivityMagnitude = [MeasurementData]()
     var movement = [MeasurementData]()
+    var emg = [MeasurementData]()
     var events = [Date: Event]()
     
     var muscleActivityThreshold: Double?
     var movementThreshold: Double?
+    var emgThreshold: Double?
     var thresholdPercentage: Double {
         didSet {
             UserDefaults.standard.set(thresholdPercentage, forKey: "thresholdPercentage")
@@ -64,10 +74,11 @@ private actor PersistenceWorker {
     
     private var cancellables = Set<AnyCancellable>()
     private var ppgTask: Task<Void, Never>?
+    private var emgTask: Task<Void, Never>?
     private var accelerometerTask: Task<Void, Never>?
     private var temperatureTask: Task<Void, Never>?
     
-    private var subscribed = false
+    private var subscribed = [UUID: Bool]()
     private var persistenceWorker = PersistenceWorker()
     
     private let ppgCalibrationFrameCount = 25
@@ -89,14 +100,15 @@ private actor PersistenceWorker {
         
         muscleActivityThreshold = UserDefaults.standard.double(forKey: "muscleActivityThreshold")
         movementThreshold = UserDefaults.standard.double(forKey: "movementThreshold")
+        emgThreshold = UserDefaults.standard.double(forKey: "emgThreshold")
         
         status = .calibrating
         Task.detached(priority: .userInitiated) { [weak self] in
             await self?.loadInitialData()
         }
         
-        bluetooth.devicePublisher.sink { device in
-            if let device {
+        bluetooth.devicesPublisher.sink { devices in
+            for device in devices {
                 self.subscribe(device)
             }
         }.store(in: &cancellables)
@@ -105,14 +117,16 @@ private actor PersistenceWorker {
     nonisolated private func loadInitialData() async {
         async let ppgPoints = reader.readPPG()
         async let accPoints = reader.readAccelerometer()
-        async let evtArray  = reader.readEvents()
+        async let evtArray = reader.readEvents()
+        async let emgPoints = reader.readEMG()
         
-        let (ppg, acc, evts) = await (ppgPoints, accPoints, evtArray)
+        let (ppg, acc, evts, emgStore) = await (ppgPoints, accPoints, evtArray, emgPoints)
         
         await MainActor.run {
             self.muscleActivityMagnitude.insert(contentsOf: ppg.map { $0.convert() }, at: 0)
             self.movement.insert(contentsOf: acc.map { $0.convert() }, at: 0)
             self.events = Dictionary( uniqueKeysWithValues: evts.map { ($0.date, $0) })
+            self.emg.insert(contentsOf: emgStore.map { $0.convert() }, at: 0)
             
             if temperature ?? 0 >= temperatureThreshold {
                 status = .active
@@ -199,22 +213,44 @@ private actor PersistenceWorker {
         self.temperature = temperature
     }
     
+    private func processEMG(_ dataPoint: MeasurementData) {
+        emg.append(dataPoint)
+        
+        recalibrateEMGWith(dataPoint)
+
+        Task {
+            await persistenceWorker.writeEMGDataPoint(EMGDataPoint(value: dataPoint.value, timestamp: dataPoint.date))
+        }
+    }
+    
+    private func recalibrateEMGWith(_ dataPoint: MeasurementData) {
+        let count = emg.count
+        if let oldAvg = emgThreshold {
+            emgThreshold = oldAvg + (dataPoint.value - oldAvg) / Double(count)
+        } else {
+            emgThreshold = dataPoint.value
+        }
+        UserDefaults.standard.set(emgThreshold, forKey: "emgThreshold")
+    }
+    
     private func subscribe(_ device: DeviceService) {
-        guard !subscribed else { return }
-        subscribed = true
+        guard !(subscribed[device.ID] ?? false) else { return }
+        subscribed[device.ID] = true
+        
         ppgTask = Task {
             for await ppg in device.ppg {
-                guard status != .inactive else {
-                    ppgFrameReceivedSinceCalibrate = 0
-                    continue
-                }
                 processPPG(ppg)
+            }
+        }
+        
+        emgTask = Task {
+            for await emg in device.emg {
+                processEMG(emg)
             }
         }
         
         accelerometerTask = Task {
             for await accelerometer in device.accelerometer {
-                guard status != .inactive else { continue }
                 processAccelerometer(accelerometer)
             }
         }
@@ -267,6 +303,10 @@ extension PPGDataPoint: MeasurementConvertible {
 }
 
 extension AccelerometerDataPoint: MeasurementConvertible {
+    
+}
+
+extension EMGDataPoint: MeasurementConvertible {
     
 }
 

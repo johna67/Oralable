@@ -7,13 +7,15 @@ import Foundation
 
 final class MockDeviceService: DeviceService {
     var name = "Mock Device"
-    var type: DeviceType = .tgm
+    var type: DeviceType
+    var ID = UUID()
 
     // Continuations for the streams
     private var ppgContinuation: AsyncStream<PPGFrame>.Continuation?
     private var accelerometerContinuation: AsyncStream<AccelerometerFrame>.Continuation?
     private var batteryVoltageContinuation: AsyncStream<Int>.Continuation?
     private var temperatureContinuation: AsyncStream<Double>.Continuation?
+    private var emgContinuation: AsyncStream<MeasurementData>.Continuation?
 
     lazy var ppg: AsyncStream<PPGFrame> = AsyncStream(bufferingPolicy: .unbounded) { continuation in
         self.ppgContinuation = continuation
@@ -30,12 +32,20 @@ final class MockDeviceService: DeviceService {
     lazy var temperature: AsyncStream<Double> = AsyncStream(bufferingPolicy: .unbounded) { continuation in
         self.temperatureContinuation = continuation
     }
+    
+    lazy var emg: AsyncStream<MeasurementData> = AsyncStream(bufferingPolicy: .unbounded) { continuation in
+        self.emgContinuation = continuation
+    }
 
     private var ppgFrameCounter: UInt32 = 33318
     private var accelerometerFrameCounter: UInt32 = 26687
     private let startTime: Date = Date()
     private var timerTask: Task<Void, Never>?
 
+    init(type: DeviceType) {
+        self.type = type
+    }
+    
     @MainActor
     func start() async throws {
         timerTask = Task { [weak self] in
@@ -64,7 +74,7 @@ final class MockDeviceService: DeviceService {
                 }
 
                 // Emit accelerometer frame
-                if let accelerometerContinuation {
+                if let accelerometerContinuation, let emgContinuation {
                     let isRandom = Int.random(in: 1...100) > 90 // 10% random sample
                     let sample: AccelerometerSample
 
@@ -85,6 +95,7 @@ final class MockDeviceService: DeviceService {
                     )
                     DispatchQueue.main.async {
                         accelerometerContinuation.yield(frame)
+                        emgContinuation.yield(frame.convertToDataPoint().convert())
                     }
                     accelerometerFrameCounter += 1
                 }

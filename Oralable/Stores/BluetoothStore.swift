@@ -14,71 +14,106 @@ import LogKit
         case connected, connecting, disconnected
     }
 
-    var status = ConnectionStatus.disconnected
-    var pairedDevice: DeviceDescriptor?
-    var battery: Int?
+    var statuses: [UUID: ConnectionStatus] = [:]
+    var pairedDevices: [DeviceDescriptor] = []
+    var batteryVoltages: [UUID: Int] = [:]
 
     @ObservationIgnored
     @Injected(\.bluetoothService) private var bluetooth
-    
     @ObservationIgnored
     @Injected(\.bluetoothAuthorizationService) private var bluetoothAuthorization
-
     @ObservationIgnored
     @Injected(\.persistenceService) private var persistence
 
-    private var batteryVoltageTask: Task<Void, Never>?
+    private var batteryVoltageTasks: [UUID: Task<Void, Never>] = [:]
     private var cancellables = Set<AnyCancellable>()
 
     init() {
-        status = .connecting
+        bluetooth.pairedDevicesPublisher
+            .sink { [weak self] descriptors in
+                guard let self = self else { return }
+                self.pairedDevices = descriptors
+                
+                for desc in descriptors {
+                    if self.statuses[desc.peripheralId] == nil {
+                        self.statuses[desc.peripheralId] = .connected
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
+        bluetooth.devicesPublisher
+            .sink { [weak self] services in
+                guard let self = self else { return }
+                
+                let existingIDs = Set(self.statuses.keys)
+                let newIDs = Set(services.map { $0.ID })
+
+                for removed in existingIDs.subtracting(newIDs) {
+                    self.statuses[removed] = .disconnected
+                    self.batteryVoltages.removeValue(forKey: removed)
+                    self.batteryVoltageTasks[removed]?.cancel()
+                    self.batteryVoltageTasks.removeValue(forKey: removed)
+                }
+                
+                for service in services {
+                    let id = service.ID
+                    self.statuses[id] = .connected
+                    if self.batteryVoltageTasks[id] == nil {
+                        self.subscribe(to: service)
+                    }
+                }
+            }
+            .store(in: &cancellables)
+
         
         Task {
             if bluetoothAuthorization.authorized != true {
                 await bluetoothAuthorization.authorize()
             }
-            
-            bluetooth.devicePublisher.sink { device in
-                if let device {
-                    self.status = .connected
-                    self.subscribe(device)
-                } else {
-                    self.status = .disconnected
-                }
-            }.store(in: &cancellables)
-
-            bluetooth.pairedDevicePublisher.sink { pairedDevice in
-                self.pairedDevice = pairedDevice
-            }.store(in: &cancellables)
-
             do {
                 try await bluetooth.start()
             } catch {
                 Log.error("Bluetooth error: \(error)")
-                status = .disconnected
+                for key in statuses.keys {
+                    statuses[key] = .disconnected
+                }
             }
         }
     }
 
     func addDevice(_ type: DeviceType) async {
-        guard status != .connected else { return }
-
         do {
-            status = .connecting
             try await bluetooth.detectDevice(type: type)
             try await bluetooth.pair(type: type)
-            status = .connected
         } catch {
             Log.error("Error adding device: \(error)")
-            status = .disconnected
         }
     }
 
-    private func subscribe(_ device: DeviceService) {
-        batteryVoltageTask = Task {
-            for await battery in device.batteryVoltage {
-                self.battery = battery
+    func removeDevice(_ descriptor: DeviceDescriptor) async {
+        do {
+            try await bluetooth.disconnectDevice(descriptor: descriptor)
+        } catch {
+            Log.error("Error removing device: \(error)")
+        }
+    }
+
+    func removeAllDevices() async {
+        do {
+            try await bluetooth.disconnectAllDevices()
+        } catch {
+            Log.error("Error removing all devices: \(error)")
+        }
+    }
+
+    private func subscribe(to service: any DeviceService) {
+        let id = service.ID
+        let task = Task {
+            for await voltage in service.batteryVoltage {
+                self.batteryVoltages[id] = voltage
             }
         }
+        batteryVoltageTasks[id] = task
     }
 }

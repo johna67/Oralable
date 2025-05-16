@@ -62,6 +62,9 @@ struct HomeView: View {
                         NavigationLink(value: MeasurementType.movement) {
                             MeasurementView(measurementType: .movement)
                         }
+                        NavigationLink(value: MeasurementType.emg) {
+                            MeasurementView(measurementType: .emg)
+                        }
                     }
                 }
                 .navigationDestination(for: MeasurementType.self) { type in

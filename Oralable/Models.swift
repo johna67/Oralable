@@ -61,6 +61,7 @@ enum MeasurementType: String, Codable {
     case muscleActivity
     case muscleActivityMagnitude
     case movement
+    case emg
 
     var unit: String {
         switch self {
@@ -69,6 +70,7 @@ enum MeasurementType: String, Codable {
         case .muscleActivity: "%"
         case .muscleActivityMagnitude: ""
         case .movement: ""
+        case .emg: ""
         }
     }
 
@@ -79,6 +81,7 @@ enum MeasurementType: String, Codable {
         case .muscleActivity: "Muscle Activity"
         case .muscleActivityMagnitude: "Muscle Activity Magnitude"
         case .movement: "Movement"
+        case .emg: "EMG"
         }
     }
 
@@ -89,6 +92,7 @@ enum MeasurementType: String, Codable {
         case .muscleActivity: "distribute.vertical.fill"
         case .muscleActivityMagnitude: "waveform.path"
         case .movement: "person.and.arrow.left.and.arrow.right.outward"
+        case .emg: "person.and.arrow.left.and.arrow.right.outward"
         }
     }
 }
@@ -108,6 +112,7 @@ enum MeasurementClassification: String, Codable {
 
 enum DeviceType: String, Codable {
     case tgm = "TGM"
+    case anr = "ANR Corp M40"
 }
 
 struct DeviceDescriptor: Model {

@@ -18,6 +18,8 @@ protocol PersistenceService {
     func readPPGDataPoints(limit: Int?) -> [PPGDataPoint]
     func writeAccelerometerDataPoint(_ dataPoint: AccelerometerDataPoint)
     func readAccelerometerDataPoints(limit: Int?) -> [AccelerometerDataPoint]
+    func writeEMGDataPoint(_ dataPoint: EMGDataPoint)
+    func readEMGDataPoints(limit: Int?) -> [EMGDataPoint]
     func readUser() -> User?
     func writeUser(_ user: User)
     func writeEvent(_ event: Event)
@@ -68,6 +70,41 @@ final class PPGDataPoint: Codable {
     }
     
     convenience init(_ dataPoint: PPGDataPoint) {
+        self.init(value: dataPoint.value, timestamp: dataPoint.timestamp)
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case value, timestamp
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        value = try container.decode(Double.self, forKey: .value)
+        timestamp = try container.decode(Date.self, forKey: .timestamp)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(value, forKey: .value)
+        try container.encode(timestamp, forKey: .timestamp)
+    }
+}
+
+@Model
+final class EMGDataPoint: Codable {
+    @Attribute var value: Double
+    @Attribute var timestamp: Date
+    
+    init(value: Double, timestamp: Date) {
+        self.value = value
+        self.timestamp = timestamp
+    }
+    
+    func toEMGDataPoint() -> EMGDataPoint {
+        EMGDataPoint(value: value, timestamp: timestamp)
+    }
+    
+    convenience init(_ dataPoint: EMGDataPoint) {
         self.init(value: dataPoint.value, timestamp: dataPoint.timestamp)
     }
     
@@ -144,6 +181,7 @@ final class SwiftDataPersistence: PersistenceService {
             container = try ModelContainer(
                 for: PPGDataPoint.self,
                 AccelerometerDataPoint.self,
+                EMGDataPoint.self,
                 UserModel.self,
                 EventModel.self
             )
@@ -158,6 +196,10 @@ final class SwiftDataPersistence: PersistenceService {
     
     func writeAccelerometerDataPoint(_ dataPoint: AccelerometerDataPoint) {
         write(AccelerometerDataPoint(dataPoint))
+    }
+    
+    func writeEMGDataPoint(_ dataPoint: EMGDataPoint) {
+        write(EMGDataPoint(dataPoint))
     }
     
     func readPPGDataPoints(limit: Int? = nil) -> [PPGDataPoint] {
@@ -177,6 +219,17 @@ final class SwiftDataPersistence: PersistenceService {
             frames = readAll(AccelerometerDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .reverse), limit: limit).reversed()
         } else {
             frames = readAll(AccelerometerDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
+        }
+        
+        return frames
+    }
+    
+    func readEMGDataPoints(limit: Int? = nil) -> [EMGDataPoint] {
+        let frames: [EMGDataPoint]
+        if let limit {
+            frames = readAll(EMGDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .reverse), limit: limit).reversed()
+        } else {
+            frames = readAll(EMGDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
         }
         
         return frames
@@ -256,3 +309,4 @@ final class SwiftDataPersistence: PersistenceService {
 extension PPGDataPoint: @unchecked Sendable {}
 extension AccelerometerDataPoint: @unchecked Sendable {}
 extension EventModel: @unchecked Sendable {}
+extension EMGDataPoint: @unchecked Sendable {}

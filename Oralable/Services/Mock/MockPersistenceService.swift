@@ -31,6 +31,7 @@ final class MockPersistenceService: PersistenceService {
     
     private var accelerometerDataPoints: [AccelerometerDataPoint]
     private var ppgDataPoints: [PPGDataPoint]
+    private var emgDataPoints: [EMGDataPoint]
     
     private var accelerometerFrameCounter: UInt32 = 26687
     private var ppgFrameCounter: UInt32 = 33318
@@ -42,6 +43,7 @@ final class MockPersistenceService: PersistenceService {
         
         accelerometerDataPoints = []
         ppgDataPoints = []
+        emgDataPoints = []
         
         for i in 0..<totalFrames {
             let timestamp = startTime.addingTimeInterval(-Double(i) * interval)
@@ -66,6 +68,7 @@ final class MockPersistenceService: PersistenceService {
             )
             
             accelerometerDataPoints.append(AccelerometerFrameModel.convertToDataPoint())
+            emgDataPoints.append(EMGDataPoint(value: AccelerometerFrameModel.convertToDataPoint().convert().value, timestamp: AccelerometerFrameModel.convertToDataPoint().convert().date))
             accelerometerFrameCounter += 1
             
             let isIRRandomized = Int.random(in: 1...100) > 70
@@ -80,6 +83,7 @@ final class MockPersistenceService: PersistenceService {
                 samples: [ppgSample]
             )
             ppgDataPoints.append(PPGFrameModel.convertToDataPoint())
+            
             ppgFrameCounter += 1
         }
         
@@ -107,5 +111,16 @@ final class MockPersistenceService: PersistenceService {
             return Array(accelerometerDataPoints.suffix(limit))
         }
         return accelerometerDataPoints
+    }
+    
+    func writeEMGDataPoint(_ dataPoint: EMGDataPoint) {
+        emgDataPoints.append(dataPoint)
+    }
+    
+    func readEMGDataPoints(limit: Int?) -> [EMGDataPoint] {
+        if let limit {
+            return Array(emgDataPoints.suffix(limit))
+        }
+        return emgDataPoints
     }
 }

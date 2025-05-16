@@ -7,35 +7,46 @@ import Foundation
 import Combine
 
 final class MockBluetoothService: BluetoothService {
-    func detectDevice(type: DeviceType) async throws {
+    @Published private var devices: [any DeviceService] = []
+    @Published private var pairedDevices: [DeviceDescriptor] = []
+    
+    var devicesPublisher: AnyPublisher<[any DeviceService], Never> {
+        $devices.eraseToAnyPublisher()
     }
     
-    var devicePublisher: AnyPublisher<(any DeviceService)?, Never> {
-        $device.eraseToAnyPublisher()
-    }
-    
-    var pairedDevicePublisher: AnyPublisher<DeviceDescriptor?, Never> {
-        $pairedDevice.eraseToAnyPublisher()
+    var pairedDevicesPublisher: AnyPublisher<[DeviceDescriptor], Never> {
+        $pairedDevices.eraseToAnyPublisher()
     }
     
     func start() async throws {
-        device = MockDeviceService()
-        pairedDevice = DeviceDescriptor(type: .tgm, peripheralId: UUID(), serviceIds: [])
-        try await device?.start()
+        let mock = MockDeviceService(type: .anr)
+        try await mock.start()
+        devices = [mock]
+        let descriptor = DeviceDescriptor(type: .tgm, peripheralId: UUID(), serviceIds: [])
+        pairedDevices = [descriptor]
     }
     
-    func disconnectDevice() async throws {
-        device = nil
+    func detectDevice(type: DeviceType) async throws {
+        try await Task.sleep(nanoseconds: 500 * 1_000_000)
     }
     
     func pair(type: DeviceType) async throws {
-        
+        let mock = MockDeviceService(type: type)
+        try await mock.start()
+        devices.append(mock)
+        let descriptor = DeviceDescriptor(type: type, peripheralId: UUID(), serviceIds: [])
+        pairedDevices.append(descriptor)
     }
     
-    nonisolated init() {
-        
+    func disconnectDevice(descriptor: DeviceDescriptor) async throws {
+//        devices.removeAll { $0.peripheralId == descriptor.peripheralId }
+        pairedDevices.removeAll { $0.peripheralId == descriptor.peripheralId }
     }
     
-    @Published var pairedDevice: DeviceDescriptor?
-    @Published var device: DeviceService?
+    func disconnectAllDevices() async throws {
+        devices.removeAll()
+        pairedDevices.removeAll()
+    }
+    
+    nonisolated init() {}
 }

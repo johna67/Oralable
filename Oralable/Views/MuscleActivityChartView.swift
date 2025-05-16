@@ -34,6 +34,8 @@ struct MuscleActivityChartView: View {
             measurements.muscleActivityMagnitude
         case .movement:
             measurements.movement
+        case .emg:
+            measurements.emg
         default:
             []
         }
@@ -313,32 +315,7 @@ extension MuscleActivityChartView {
         
         return 0
     }
-    
-//    func aggregateWithWeightedMedian(_ raw: [MeasurementData], interval: TimeInterval = 5.0) -> ([MeasurementData], Double) {
-//        guard let first = raw.first, let last = raw.last else { return ([], 0) }
-//
-//        var store: [Int:[Double]] = [:]
-//        for m in raw {
-//            let idx = Int(m.date.timeIntervalSince(first.date) / interval)
-//            store[idx, default: []].append(m.value)
-//        }
-//
-//        var result: [MeasurementData] = []
-//        let lastIdx = Int(last.date.timeIntervalSince(first.date) / interval)
-//
-//        for idx in 0...lastIdx {
-//            let bucketStart = first.date.addingTimeInterval(Double(idx) * interval)
-//            if let samples = store[idx] {
-//                result.append(.init(date: bucketStart,
-//                                    value: weightedMedian(samples)))
-//            } else {
-//                result.append(.init(date: bucketStart, value: nil))
-//            }
-//        }
-//
-//        return normalise(result)
-//    }
-    
+        
     private func aggregateWithWeightedMedian(_ data: [MeasurementData], interval: TimeInterval = 5.0) -> ([MeasurementData], Double) {
         guard !data.isEmpty else { return ([], 0) }
         
@@ -389,6 +366,10 @@ extension MuscleActivityChartView {
             }
         case .movement:
             if let thresholdValue = measurements.movementThreshold {
+                threshold = (thresholdValue - minValue) / (maxValue - minValue) * (1 + measurements.thresholdPercentage)
+            }
+        case .emg:
+            if let thresholdValue = measurements.emgThreshold {
                 threshold = (thresholdValue - minValue) / (maxValue - minValue) * (1 + measurements.thresholdPercentage)
             }
         default:

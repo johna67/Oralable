@@ -17,36 +17,50 @@ struct BluetoothServiceError: Error, CustomStringConvertible {
 
 @MainActor
 protocol BluetoothService {
-    var devicePublisher: AnyPublisher<DeviceService?, Never> { get }
-    var pairedDevicePublisher: AnyPublisher<DeviceDescriptor?, Never> { get }
+    var devicesPublisher: AnyPublisher<[any DeviceService], Never> { get }
+    var pairedDevicesPublisher: AnyPublisher<[DeviceDescriptor], Never> { get }
+    
     func start() async throws
     func detectDevice(type: DeviceType) async throws
-    func disconnectDevice() async throws
     func pair(type: DeviceType) async throws
+    func disconnectDevice(descriptor: DeviceDescriptor) async throws
+    func disconnectAllDevices() async throws
 }
 
 final class LiveBluetoothService: BluetoothService {
-    @Published private var pairedDevice: DeviceDescriptor?
-    @Published private var device: DeviceService?
+    @Published private var pairedDevices: [DeviceDescriptor] = LiveBluetoothService.getPersistedPairedDevices()
+    @Published private var devices: [any DeviceService] = []
     
-    var devicePublisher: AnyPublisher<(any DeviceService)?, Never> {
-        $device.eraseToAnyPublisher()
+    var devicesPublisher: AnyPublisher<[any DeviceService], Never> {
+        $devices.eraseToAnyPublisher()
     }
     
-    var pairedDevicePublisher: AnyPublisher<DeviceDescriptor?, Never> {
-        $pairedDevice.eraseToAnyPublisher()
+    var pairedDevicesPublisher: AnyPublisher<[DeviceDescriptor], Never> {
+        $pairedDevices.eraseToAnyPublisher()
     }
     
     private var manager: CentralManager?
     private var cancellables = Set<AnyCancellable>()
-    private var peripheral: Peripheral?
+    
+    private var supportedDevices: [DeviceDescriptor] = [
+        DeviceDescriptor( type: .tgm, peripheralId: UUID(), serviceIds: [UUID(uuidString: "3A0FF000-98C4-46B2-94AF-1AEE0FD4C48E")!]),
+        DeviceDescriptor( type: .anr, peripheralId: UUID(), serviceIds: [])
+    ]
+    
+    private var detectedPeripherals: [DeviceType: Peripheral] = [:]
+    private var connections: [UUID: (descriptor: DeviceDescriptor, peripheral: Peripheral, service: any DeviceService)] = [:]
+    
     private let connectTimeout = 15.0
-    private var connecting = false
     private var restoringState = false
-    private var supportedDevices: [DeviceDescriptor] = [DeviceDescriptor(type: .tgm, peripheralId: UUID(), serviceIds: [UUID(uuidString: "3A0FF000-98C4-46B2-94AF-1AEE0FD4C48E")!])]
     
     init() {
-        pairedDevice = LiveBluetoothService.getPersistedPairedDevice()
+        pairedDevices = LiveBluetoothService.getPersistedPairedDevices()
+    }
+    
+    func start() async throws {
+        Log.info("Starting bluetooth service")
+        await initManager()
+        Log.info("Bluetooth service started successfully")
     }
     
     func detectDevice(type: DeviceType) async throws {
@@ -54,254 +68,211 @@ final class LiveBluetoothService: BluetoothService {
         guard let manager else {
             throw BluetoothServiceError(message: "Bluetooth not initialized")
         }
-
-        guard let device = supportedDevices.first(where: { $0.type == type }) else {
+        guard let descriptor = supportedDevices.first(where: { $0.type == type }) else {
             throw BluetoothServiceError(message: "Device not supported")
         }
-
         try await withThrowingTimeout(seconds: connectTimeout) {
             try await manager.waitUntilReady()
-            let serviceIds = device.serviceIds.map { CBUUID(nsuuid: $0) }
-            //let scanDataStream = try await manager.scanForPeripherals(withServices: serviceIds)
-            let scanDataStream = try await manager.scanForPeripherals(withServices: nil) //TODO: this should be done based on advertised service
-            Log.debug("Will scan for peripheral for \(type) device, with services: \(serviceIds)")
-            
+            let serviceIds = descriptor.serviceIds.map { CBUUID(nsuuid: $0) }
+            let scanDataStream = try await manager.scanForPeripherals(withServices: nil) // TODO: filter by serviceIds
+            Log.debug("Scanning for peripheral for \(type), with services: \(serviceIds)")
             for await scanData in scanDataStream {
-                //try await scanData.peripheral.discoverServices(nil)
-                Log.debug("\(scanData.peripheral.name ?? "unknown device")")
+                Log.debug("Detected: \(scanData.peripheral.name ?? "unknown")")
                 if scanData.peripheral.name == type.rawValue {
-                    self.peripheral = scanData.peripheral
-                    Log.debug("Found peripheral for \(type) device, \(scanData.peripheral.name ?? "") identifier: \(scanData.peripheral.identifier)")
+                    detectedPeripherals[type] = scanData.peripheral
+                    Log.debug("Found peripheral for \(type): \(scanData.peripheral.identifier)")
                     break
                 }
             }
             await manager.stopScan()
         }
     }
-
+    
     func pair(type: DeviceType) async throws {
         Log.info("Attempting to pair device \(type)")
-
-        guard let peripheral else {
+        guard let peripheral = detectedPeripherals[type] else {
             throw BluetoothServiceError(message: "Peripheral not yet detected")
         }
-
         try await connect(peripheral, type: type, timeout: false)
     }
-
-    func disconnectDevice() async throws {
-        Log.info("Disconnecting device")
-        if let peripheral {
-            try await manager?.cancelPeripheralConnection(peripheral)
+    
+    func disconnectDevice(descriptor: DeviceDescriptor) async throws {
+        Log.info("Disconnecting device \(descriptor)")
+        guard let entry = connections[descriptor.peripheralId] else {
+            throw BluetoothServiceError(message: "Device not connected")
         }
-        peripheral = nil
-
-        unpair()
+        try await manager?.cancelPeripheralConnection(entry.peripheral)
+        removeConnection(descriptor)
     }
     
-    func start() async throws {
-        Log.info("Starting bluetooth service")
-
-        await initManager()
-
-        Log.info("Bluetooth service started successfully")
+    func disconnectAllDevices() async throws {
+        Log.info("Disconnecting all devices")
+        for (_, entry) in connections {
+            try await manager?.cancelPeripheralConnection(entry.peripheral)
+        }
+        connections.removeAll()
+        devices.removeAll()
+        pairedDevices.removeAll()
+        LiveBluetoothService.persistPairedDevices([])
     }
 }
 
-extension LiveBluetoothService {
-    private static func persistPairedDevice(_ device: DeviceDescriptor?) {
-        UserDefaults.standard.set(try? JSONEncoder().encode(device), forKey: "pairedDevice")
+private extension LiveBluetoothService {
+    private static func persistPairedDevices(_ devices: [DeviceDescriptor]) {
+        UserDefaults.standard.set(try? JSONEncoder().encode(devices), forKey: "pairedDevices")
     }
     
-    private static func getPersistedPairedDevice() -> DeviceDescriptor? {
-        guard let json = UserDefaults.standard.object(forKey: "pairedDevice") as? Data else { return nil }
-        return try? JSONDecoder().decode(DeviceDescriptor.self, from: json)
+    private static func getPersistedPairedDevices() -> [DeviceDescriptor] {
+        guard let data = UserDefaults.standard.data(forKey: "pairedDevices") else { return [] }
+        return (try? JSONDecoder().decode([DeviceDescriptor].self, from: data)) ?? []
     }
     
-    private func initializeDevice(type: DeviceType, peripheral: Peripheral) async throws {
-        switch type {
-        case .tgm:
-            device = TGMService(peripheral)
-        }
-        
-        try await device?.start()
-        let deviceDescriptor = DeviceDescriptor(type: type, peripheralId: peripheral.identifier, serviceIds: [])
-        LiveBluetoothService.persistPairedDevice(deviceDescriptor)
-        pairedDevice = deviceDescriptor
-    }
-    
-    private func subscribeToEvents() {
-        guard let manager else {
-            Log.error("Cannot subscribe to events, bluetooth manager not initialized")
-            return
-        }
-
-        manager.eventPublisher.sink { event in
-            Log.debug("Received bluetooth event: \(event)")
-            switch event {
-            case let .didUpdateState(state: state):
-                Log.info("Bluetooth state changed to: \(state)")
-                
-                switch state {
-                case .poweredOn:
-                    Task {
-                        await self.poweredOn()
-                    }
-                default:
-                    break
-                }
-            case let .didDisconnectPeripheral(peripheral, _, error):
-                self.didDisconnect(peripheral: peripheral, error: error)
-            case let .willRestoreState(state: state):
-                self.restoringState = true
-
-                Task {
-                    await self.willRestoreState(state)
-                }
-            case let .didConnectPeripheral(peripheral: peripheral):
-                Log.info("Connected to \(String(describing: peripheral.name))")
-            default: break
-            }
-        }.store(in: &cancellables)
-    }
-    
-    private func restorePairing() async throws {
-        guard let manager else {
-            throw BluetoothError.bluetoothUnavailable(.unknown)
-        }
-
-        Log.info("Did not receive state restore, trying to restore device from persisted state")
-
-        var type: DeviceType?
-
-        if let paired = LiveBluetoothService.getPersistedPairedDevice() {
-            type = paired.type
-            peripheral = manager.retrievePeripherals(withIdentifiers: [paired.peripheralId]).first
-        }
-
-        guard let peripheral, let type else {
-            unpair()
-            throw BluetoothServiceError(message: "Could not restore device")
-        }
-        Log.info("\(String(describing: peripheral.name)) (\(peripheral.state)), \(type) restored - trying to connect")
-        try await connect(peripheral, type: type)
-    }
-
     private func initManager() async {
         guard manager == nil else {
             Log.warn("Bluetooth manager already initialized")
             return
         }
-        manager = CentralManager(dispatchQueue: nil, options: [
-            CBCentralManagerOptionShowPowerAlertKey: true,
-            CBCentralManagerOptionRestoreIdentifierKey: "OralableCentralManagerRestoreIdentifier"
-        ])
-
+        manager = CentralManager(
+            dispatchQueue: nil,
+            options: [
+                CBCentralManagerOptionShowPowerAlertKey: true,
+                CBCentralManagerOptionRestoreIdentifierKey: "OralableCentralManagerRestoreIdentifier"
+            ]
+        )
         subscribeToEvents()
     }
     
-    private func poweredOn() async {
-        guard !restoringState else {
-            Log.info("Already restoring device with Bluetooth state restore")
-            return
-        }
-        
-        do {
-            try await restorePairing()
-        } catch {
-            Log.error("Restore pairing failed: \(String(describing: error))")
-            if isUnpaired(error) {
-                unpair()
-            }
-        }
+    private func updatePublishers() {
+        devices = connections.values.map { $0.service }
+        pairedDevices = connections.values.map { $0.descriptor }
+        LiveBluetoothService.persistPairedDevices(pairedDevices)
     }
-
-    private func didDisconnect(peripheral: Peripheral, error: Error?) {
-        guard let error else {
-            Log.warn("Device disconnected with empty error - unpair")
-            unpair()
-            return
-        }
-
-        Log.warn("Peripheral \(peripheral) disconnected, \(String(describing: error))")
-
-        if isUnpaired(error) {
-            unpair()
-            return
-        }
-
-        guard let type = LiveBluetoothService.getPersistedPairedDevice()?.type else {
-            Log.error("No device type found")
-            return
-        }
-
-        device = nil
-
-        reconnect(peripheral, type: type)
+    
+    private func removeConnection(_ descriptor: DeviceDescriptor) {
+        connections[descriptor.peripheralId] = nil
+        updatePublishers()
     }
-
-    private func willRestoreState(_ state: [String: Any]) async {
-        Log.info("Will restore state received, with \(state)")
-
-        guard let cbperipheral = (state[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral])?.first, let peripheral = manager?.retrievePeripherals(withIdentifiers: [cbperipheral.identifier]).first else {
-            Log.error("Could not get peripheral from state")
-            unpair()
-            return
+    
+    private func initializeDevice(type: DeviceType, peripheral: Peripheral) async throws {
+        let service: any DeviceService
+        switch type {
+        case .tgm:
+            service = TGMService(peripheral)
+        case .anr:
+            service = ANRService(peripheral)
         }
-
-        self.peripheral = peripheral
-
-        do {
-            if let paired = LiveBluetoothService.getPersistedPairedDevice() {
-                Log.info("Found persisted device \(paired), connecting")
-                try await connect(peripheral, type: paired.type)
-            } else {
-                Log.warn("Persisted device not found, trying to determine type based on discovered services")
-                if let type = deviceType(for: peripheral) {
-                    pairedDevice = DeviceDescriptor(type: type, peripheralId: peripheral.identifier, serviceIds: [])
-                    try await connect(peripheral, type: type)
-                } else {
-                    Log.error("Could not restore device")
-                    unpair()
-                }
-            }
-        } catch {
-            Log.error("Cannot restore state: \(String(describing: error))")
-        }
-    }
-
-    private func unpair() {
-        Log.warn("Device unpaired, removing from preferences")
-        LiveBluetoothService.persistPairedDevice(nil)
-        pairedDevice = nil
-        device = nil
+        try await service.start()
+        let deviceDescriptor = DeviceDescriptor(type: type, peripheralId: peripheral.identifier, serviceIds: [])
+        connections[peripheral.identifier] = (descriptor: deviceDescriptor, peripheral: peripheral, service: service)
+        updatePublishers()
     }
     
     private func connect(_ peripheral: Peripheral, type: DeviceType, timeout: Bool = true) async throws {
         try await manager?.waitUntilReady()
         do {
             try await withThrowingTimeout(seconds: timeout ? connectTimeout : nil) {
-                Log.info("Connecting device \(type), \(timeout ? "with" : "without") timeout")
-                try await self.manager?.connect(peripheral)
+                Log.info("Connecting device \(type) \(timeout ? "with" : "without") timeout")
+                try await manager?.connect(peripheral)
             }
             try await withThrowingTimeout(seconds: timeout ? connectTimeout : nil) {
-                Log.info("Successfully connected, initializing device")
-                try await self.initializeDevice(type: type, peripheral: peripheral)
+                Log.info("Connected: initializing device")
+                try await initializeDevice(type: type, peripheral: peripheral)
             }
         } catch {
-            Log.error("Could not connect device: \(String(describing: error))")
+            Log.error("Connection failed for \(type): \(error)")
             if isUnpaired(error) {
-                unpair()
+                removeConnection(DeviceDescriptor(type: type, peripheralId: peripheral.identifier, serviceIds: []))
             } else {
                 reconnect(peripheral, type: type)
             }
             throw error
         }
     }
-
+    
+    private func subscribeToEvents() {
+        guard let manager else {
+            Log.error("Bluetooth manager not initialized")
+            return
+        }
+        manager.eventPublisher.sink { [weak self] event in
+            guard let self = self else { return }
+            Log.debug("Bluetooth event: \(event)")
+            switch event {
+            case let .didUpdateState(state):
+                if state == .poweredOn {
+                    Task { await self.poweredOn() }
+                }
+            case let .didDisconnectPeripheral(peripheral, _, error):
+                self.handleDisconnect(peripheral: peripheral, error: error)
+            case let .willRestoreState(state):
+                self.restoringState = true
+                Task { await self.handleRestoreState(state) }
+            default:
+                break
+            }
+        }.store(in: &cancellables)
+    }
+    
+    private func poweredOn() async {
+        guard !restoringState else { return }
+        do {
+            try await restorePairing()
+        } catch {
+            Log.error("Restore pairing failed: \(error)")
+        }
+    }
+    
+    private func restorePairing() async throws {
+        guard let manager else { throw BluetoothError.bluetoothUnavailable(.unknown) }
+        let persisted = LiveBluetoothService.getPersistedPairedDevices()
+        for descriptor in persisted {
+            if let peripheral = manager.retrievePeripherals(withIdentifiers: [descriptor.peripheralId]).first {
+                try await connect(peripheral, type: descriptor.type)
+            } else {
+                Log.error("Could not restore peripheral \(descriptor.peripheralId)")
+            }
+        }
+    }
+    
+    private func handleDisconnect(peripheral: Peripheral, error: Error?) {
+        if let err = error {
+            Log.warn("Peripheral \(peripheral) disconnected: \(err)")
+            if isUnpaired(err) {
+                if let entry = connections[peripheral.identifier] {
+                    removeConnection(entry.descriptor)
+                }
+            } else if let entry = connections[peripheral.identifier] {
+                connections[peripheral.identifier] = nil
+                updatePublishers()
+                reconnect(peripheral, type: entry.descriptor.type)
+            }
+        } else {
+            Log.warn("Peripheral disconnected without error")
+            if let entry = connections[peripheral.identifier] {
+                removeConnection(entry.descriptor)
+            }
+        }
+    }
+    
+    private func handleRestoreState(_ state: [String: Any]) async {
+        guard let cbPeripherals = state[CBCentralManagerRestoredStatePeripheralsKey] as? [CBPeripheral] else {
+            Log.error("No peripherals to restore")
+            return
+        }
+        for cb in cbPeripherals {
+            if let peripheral = manager?.retrievePeripherals(withIdentifiers: [cb.identifier]).first {
+                if let descriptor = LiveBluetoothService.getPersistedPairedDevices().first(where: { $0.peripheralId == cb.identifier }) {
+                    try? await connect(peripheral, type: descriptor.type)
+                } else if let type = deviceType(for: peripheral) {
+                    try? await connect(peripheral, type: type)
+                }
+            }
+        }
+    }
+    
     private func isUnpaired(_ error: Error) -> Bool {
-        let underlyingError = (error as? BluetoothError)?.wrappedError ?? error
-        switch underlyingError {
+        let underlying = (error as? BluetoothError)?.wrappedError ?? error
+        switch underlying {
         case CBATTError.insufficientEncryption,
              CBATTError.insufficientAuthentication,
              CBError.peerRemovedPairingInformation:
@@ -310,35 +281,27 @@ extension LiveBluetoothService {
             return false
         }
     }
-
+    
     private func reconnect(_ peripheral: Peripheral, type: DeviceType) {
-        Log.info("Reconnecting to device...")
         Task {
             do {
                 try await connect(peripheral, type: type, timeout: false)
             } catch {
-                Log.error("Failed to reconnect \(type) device: \(String(describing: error))")
+                Log.error("Reconnection failed for \(type): \(error)")
             }
         }
     }
-
+    
     private func deviceType(for peripheral: Peripheral) -> DeviceType? {
-//        guard let services = peripheral.discoveredServices else {
-//            Log.error("No discovered services on device, cannot determine type")
-//            return nil
-//        }
-
-        return supportedDevices.first { $0.type.rawValue == peripheral.name }?.type //TODO: this should be based on advertised service not name
+        supportedDevices.first { $0.type.rawValue == peripheral.name }?.type
     }
 }
 
 private extension BluetoothError {
     var wrappedError: Error? {
-        switch self {
-        case let .errorConnectingToPeripheral(error):
-            return error
-        default:
-            return nil
+        if case let .errorConnectingToPeripheral(err) = self {
+            return err
         }
+        return nil
     }
 }
