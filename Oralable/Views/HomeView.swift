@@ -68,7 +68,7 @@ struct HomeView: View {
                     }
                 }
                 .navigationDestination(for: MeasurementType.self) { type in
-                    MuscleActivityChartView(measurementType: type)
+                    MuscleActivityChartView(measurements: measurements, measurementType: type)
                 }
                 .edgesIgnoringSafeArea(.bottom)
                 Spacer()

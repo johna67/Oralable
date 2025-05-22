@@ -6,8 +6,8 @@
 import Foundation
 
 final class MockPersistenceService: PersistenceService {
-    func exportAllToJson() throws -> Data {
-        Data()
+    func exportToFile(_ email: String, thresholds: [MeasurementType: Double?]) async -> URL? {
+        nil
     }
     
     func writeEvent(_ event: Event) {

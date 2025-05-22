@@ -58,38 +58,35 @@ struct Event: Model {
 enum MeasurementType: String, Codable {
     case heartRate
     case temperature
-    case muscleActivity
+    //only these one are used
     case muscleActivityMagnitude
     case movement
     case emg
-
+    
     var unit: String {
         switch self {
         case .heartRate: "bpm"
         case .temperature: "°C"
-        case .muscleActivity: "%"
         case .muscleActivityMagnitude: ""
         case .movement: ""
         case .emg: ""
         }
     }
-
+    
     var name: String {
         switch self {
         case .heartRate: "Heart Rate"
         case .temperature: "Temperature"
-        case .muscleActivity: "Muscle Activity"
         case .muscleActivityMagnitude: "Muscle Activity Magnitude"
         case .movement: "Movement"
         case .emg: "EMG"
         }
     }
-
+    
     var icon: String {
         switch self {
         case .heartRate: "heart.fill"
         case .temperature: "medical.thermometer.fill"
-        case .muscleActivity: "distribute.vertical.fill"
         case .muscleActivityMagnitude: "waveform.path"
         case .movement: "person.and.arrow.left.and.arrow.right.outward"
         case .emg: "person.and.arrow.left.and.arrow.right.outward"

@@ -4,6 +4,14 @@ import Foundation
 import SwiftUI
 import UIKit.UIApplication
 
+extension Array where Element == MeasurementData {
+    func averageValue() -> Double? {
+        guard !self.isEmpty else { return nil }
+        let total = self.reduce(0.0) { $0 + $1.value }
+        return total / Double(self.count)
+    }
+}
+
 extension URL {
     init(_ string: StaticString) {
         self.init(string: "\(string)")!
@@ -16,7 +24,7 @@ extension UIApplication {
             open(url, options: [:], completionHandler: nil)
         }
     }
-
+    
     func dismissKeyboard() {
         sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
     }
@@ -28,13 +36,13 @@ extension Sequence {
             try await operation(element)
         }
     }
-
+    
     func asyncMap<T>(_ transform: (Element) async throws -> T, parallel _: Bool = false) async rethrows -> [T] {
         var values = [T]()
         for element in self {
             try await values.append(transform(element))
         }
-
+        
         return values
     }
 }
@@ -46,7 +54,7 @@ public extension Bundle {
         else {
             return nil
         }
-
+        
         return "\(appVersion) (\(appBuildNumber))"
     }
 }
@@ -70,7 +78,7 @@ extension View {
             action()
         }
     }
-
+    
     func appWillResignToBackground(perform action: @escaping () -> Void) -> some View {
         onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
             action()

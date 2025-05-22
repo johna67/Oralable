@@ -13,42 +13,40 @@ import LogKit
     enum ConnectionStatus {
         case connected, connecting, disconnected
     }
-
+    
     var statuses: [UUID: ConnectionStatus] = [:]
     var pairedDevices: [DeviceDescriptor] = []
     var batteryVoltages: [UUID: Int] = [:]
-
+    
     @ObservationIgnored
     @Injected(\.bluetoothService) private var bluetooth
     @ObservationIgnored
     @Injected(\.bluetoothAuthorizationService) private var bluetoothAuthorization
     @ObservationIgnored
     @Injected(\.persistenceService) private var persistence
-
+    
     private var batteryVoltageTasks: [UUID: Task<Void, Never>] = [:]
     private var cancellables = Set<AnyCancellable>()
-
+    
     init() {
         bluetooth.pairedDevicesPublisher
             .sink { [weak self] descriptors in
                 guard let self = self else { return }
                 self.pairedDevices = descriptors
                 
-                for desc in descriptors {
-                    if self.statuses[desc.peripheralId] == nil {
-                        self.statuses[desc.peripheralId] = .connected
-                    }
+                for desc in descriptors where self.statuses[desc.peripheralId] == nil {
+                    self.statuses[desc.peripheralId] = .connected
                 }
             }
             .store(in: &cancellables)
-
+        
         bluetooth.devicesPublisher
             .sink { [weak self] services in
                 guard let self = self else { return }
                 
                 let existingIDs = Set(self.statuses.keys)
                 let newIDs = Set(services.map { $0.ID })
-
+                
                 for removed in existingIDs.subtracting(newIDs) {
                     self.statuses[removed] = .disconnected
                     self.batteryVoltages.removeValue(forKey: removed)
@@ -65,7 +63,6 @@ import LogKit
                 }
             }
             .store(in: &cancellables)
-
         
         Task {
             if bluetoothAuthorization.authorized != true {
@@ -81,7 +78,7 @@ import LogKit
             }
         }
     }
-
+    
     func addDevice(_ type: DeviceType) async {
         do {
             try await bluetooth.detectDevice(type: type)
@@ -90,7 +87,7 @@ import LogKit
             Log.error("Error adding device: \(error)")
         }
     }
-
+    
     func removeDevice(_ descriptor: DeviceDescriptor) async {
         do {
             try await bluetooth.disconnectDevice(descriptor: descriptor)
@@ -98,7 +95,7 @@ import LogKit
             Log.error("Error removing device: \(error)")
         }
     }
-
+    
     func removeAllDevices() async {
         do {
             try await bluetooth.disconnectAllDevices()
@@ -106,7 +103,7 @@ import LogKit
             Log.error("Error removing all devices: \(error)")
         }
     }
-
+    
     private func subscribe(to service: any DeviceService) {
         let id = service.ID
         let task = Task {

@@ -7,13 +7,18 @@ import SwiftUI
 
 struct MoreView: View {
     @State private var signOutConfirmationShown = false
+    @State private var isLoading = false
     @State private var shareItem: ActivityItem?
+    @State private var isImporterPresented = false
+    @State private var showImportedDataView = false
+    @State private var navigationPath = NavigationPath()
+    
     @Environment(MeasurementStore.self) var measurements: MeasurementStore
     @Environment(\.dismiss) var dismiss
-
+    
     var body: some View {
         @Bindable var measurements = measurements
-        NavigationView {
+        NavigationStack(path: $navigationPath) {
             VStack {
                 HStack {
                     Button {
@@ -38,7 +43,7 @@ struct MoreView: View {
                             Text("About")
                         }
                     }
-
+                    
                     Section {
                         Button {
                             shareItem = ActivityItem(items: AppMetadata.appStoreUrl)
@@ -59,7 +64,7 @@ struct MoreView: View {
                             }
                         }
                     }
- 
+                    
                     Section {
                         NavigationLink(destination: WebView(url: AppMetadata.termsUrl)) {
                             Image(systemName: "doc.text")
@@ -73,16 +78,45 @@ struct MoreView: View {
                     
                     Section {
                         Button {
-                            if let url = measurements.exportToFile() {
-                                shareItem = ActivityItem(items: url)
+                            isLoading = true
+                            Task {
+                                if let url = await measurements.exportToFile() {
+                                    shareItem = ActivityItem(items: url)
+                                }
+                                isLoading = false
                             }
                         } label: {
                             HStack {
                                 Image(systemName: "waveform.path.ecg")
                                 Text("Share Measurements")
+                                if isLoading {
+                                    ProgressView()
+                                }
                             }
                         }
+                        .disabled(isLoading || !measurements.dataLoaded)
                         .activitySheet($shareItem) { _, _, _, _ in
+                        }
+                        
+                        Button {
+                            isImporterPresented = true
+                        } label: {
+                            HStack {
+                                Image(systemName: "waveform.path.ecg")
+                                Text("Import Measurements")
+                            }
+                        }
+                        .fileImporter(
+                            isPresented: $isImporterPresented,
+                            allowedContentTypes: [.json],
+                            allowsMultipleSelection: false
+                        ) { result in
+                            handleImport(result: result)
+                        }
+                        
+                        NavigationLink(destination: ImportedDataView()) {
+                            Image(systemName: "waveform.path.ecg")
+                            Text("Imported Data")
                         }
                     }
                     
@@ -95,7 +129,7 @@ struct MoreView: View {
                             
                         }
                     }
-
+                    
                     Section {
                         Button {
                             signOutConfirmationShown = true
@@ -118,13 +152,40 @@ struct MoreView: View {
                     }
                     .listRowBackground(Color.clear)
                 }
-               
+                
+            }
+            .navigationDestination(for: String.self) { value in
+                if value == "ImportedData" {
+                    ImportedDataView()
+                }
             }
             .foregroundStyle(Color.foreground)
             .scrollContentBackground(.hidden)
             .background(Color.background)
         }
-        // .navigationBarHidden(true)
+    }
+    
+    func handleImport(result: Result<[URL], Error>) {
+        do {
+            guard let selectedFile: URL = try result.get().first else { return }
+            if selectedFile.startAccessingSecurityScopedResource() {
+                let fileName = selectedFile.lastPathComponent
+                let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0].appendingPathComponent(fileName)
+                
+                if FileManager.default.fileExists(atPath: documentsURL.path) {
+                    try FileManager.default.removeItem(at: documentsURL)
+                }
+                
+                try FileManager.default.copyItem(at: selectedFile, to: documentsURL)
+                print("File saved to: \(documentsURL)")
+                DispatchQueue.main.async {
+                    navigationPath.append("ImportedData")
+                }
+            }
+            
+        } catch {
+            print("Failed to import and save file: \(error)")
+        }
     }
 }
 

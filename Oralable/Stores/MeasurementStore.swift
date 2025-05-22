@@ -26,6 +26,10 @@ private actor PersistenceReader {
     func readEMG() -> [EMGDataPoint] {
         persistence.readEMGDataPoints(limit: nil)
     }
+    
+    func readUserEmail() -> String? {
+        persistence.readUser()?.email
+    }
 }
 
 private actor PersistenceWorker {
@@ -49,12 +53,104 @@ private actor PersistenceWorker {
     }
 }
 
+enum MeasurementStatus {
+    case inactive, calibrating, active
+}
+
 @MainActor
-@Observable final class MeasurementStore {
-    enum Status {
-        case inactive, calibrating, active
+protocol MeasurementStoreProtocol: AnyObject {
+    var dataLoaded: Bool { get }
+    var dataLoadedCallback: (() -> Void)? { get set }
+    var status: MeasurementStatus { get }
+    var temperature: Double? { get }
+    
+    var muscleActivityMagnitude: [MeasurementData] { get }
+    var movement: [MeasurementData] { get }
+    var emg: [MeasurementData] { get }
+    var events: [Date: Event] { get }
+    
+    var muscleActivityThreshold: Double? { get }
+    var movementThreshold: Double? { get }
+    var emgThreshold: Double? { get }
+    var thresholdPercentage: Double { get }
+    
+    func addEvent(_ event: Event)
+}
+
+@MainActor
+@Observable final class JSONMeasurementStore: MeasurementStoreProtocol {
+    var status = MeasurementStatus.inactive
+    
+    var temperature: Double?
+    
+    var muscleActivityMagnitude = [MeasurementData]()
+    var movement = [MeasurementData]()
+    var emg = [MeasurementData]()
+    var events = [Date: Event]()
+    
+    var muscleActivityThreshold: Double?
+    var movementThreshold: Double?
+    var emgThreshold: Double?
+    var thresholdPercentage: Double {
+        didSet {
+            UserDefaults.standard.set(thresholdPercentage, forKey: "thresholdPercentage")
+        }
     }
-    var status = Status.inactive
+    var dataLoadedCallback: (() -> Void)?
+    var dataLoaded: Bool = false
+    
+    init(jsonURL: URL) {
+        thresholdPercentage = UserDefaults.standard.double(forKey: "thresholdPercentage")
+        if thresholdPercentage == 0 {
+            thresholdPercentage = 0.2
+        }
+        
+        Task.detached(priority: .userInitiated) { [weak self] in
+            await self?.loadInitialData(jsonURL: jsonURL)
+        }
+    }
+    
+    nonisolated private func loadInitialData(jsonURL: URL) async {
+        var exportData: ExportData?
+        do {
+            let data = try Data(contentsOf: jsonURL)
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            exportData = try decoder.decode(ExportData.self, from: data)
+        } catch {
+            
+        }
+        
+        guard let exportData = exportData else { return }
+        
+        await MainActor.run {
+            self.status = .active
+            self.temperature = nil
+            
+            self.muscleActivityMagnitude.insert(contentsOf: exportData.ppg.map { $0.convert() }, at: 0)
+            self.movement.insert(contentsOf: exportData.accelerometer.map { $0.convert() }, at: 0)
+            self.events = Dictionary( uniqueKeysWithValues: exportData.events.map { ($0.date, $0) })
+            self.emg.insert(contentsOf: exportData.emg.map { $0.convert() }, at: 0)
+            
+            self.muscleActivityThreshold = exportData.thresholds[.muscleActivityMagnitude] ?? self.muscleActivityMagnitude.averageValue()
+            self.movementThreshold = exportData.thresholds[.movement] ?? self.movement.averageValue()
+            self.emgThreshold = exportData.thresholds[.emg] ?? self.emg.averageValue()
+            
+            dataLoaded = true
+            if let callback = dataLoadedCallback {
+                callback()
+            }
+        }
+    }
+    
+    func addEvent(_ event: Event) {
+        
+    }
+}
+
+@MainActor
+@Observable final class MeasurementStore: MeasurementStoreProtocol {
+    var status = MeasurementStatus.inactive
     
     var temperature: Double?
     
@@ -72,6 +168,8 @@ private actor PersistenceWorker {
         }
     }
     
+    var userEmail: String?
+    
     private var cancellables = Set<AnyCancellable>()
     private var ppgTask: Task<Void, Never>?
     private var emgTask: Task<Void, Never>?
@@ -83,7 +181,10 @@ private actor PersistenceWorker {
     
     private let ppgCalibrationFrameCount = 25
     private var ppgFrameReceivedSinceCalibrate = 0
-    private let temperatureThreshold = 32.0
+    private let temperatureThreshold = 24.0
+    
+    var dataLoadedCallback: (() -> Void)?
+    var dataLoaded: Bool = false
     
     @ObservationIgnored
     @Injected(\.persistenceService) private var persistence
@@ -119,34 +220,33 @@ private actor PersistenceWorker {
         async let accPoints = reader.readAccelerometer()
         async let evtArray = reader.readEvents()
         async let emgPoints = reader.readEMG()
+        async let readEmail = reader.readUserEmail()
         
-        let (ppg, acc, evts, emgStore) = await (ppgPoints, accPoints, evtArray, emgPoints)
+        let (ppg, acc, evts, emgStore, email) = await (ppgPoints, accPoints, evtArray, emgPoints, readEmail)
         
         await MainActor.run {
             self.muscleActivityMagnitude.insert(contentsOf: ppg.map { $0.convert() }, at: 0)
             self.movement.insert(contentsOf: acc.map { $0.convert() }, at: 0)
             self.events = Dictionary( uniqueKeysWithValues: evts.map { ($0.date, $0) })
             self.emg.insert(contentsOf: emgStore.map { $0.convert() }, at: 0)
+            self.userEmail = email ?? UUID().uuidString
             
             if temperature ?? 0 >= temperatureThreshold {
                 status = .active
             } else {
                 status = .inactive
             }
+            
+            dataLoaded = true
+            if let callback = dataLoadedCallback {
+                callback()
+            }
         }
     }
     
-    func exportToFile() -> URL? {
-        do {
-            let jsonData = try persistence.exportAllToJson()
-            let tempDir = FileManager.default.temporaryDirectory
-            let fileURL = tempDir.appendingPathComponent("Oralable.json")
-            try jsonData.write(to: fileURL)
-            return fileURL
-        } catch {
-            Log.error("Error saving combined data to file: \(error)")
-            return nil
-        }
+    func exportToFile() async -> URL? {
+        guard let email = userEmail else { return nil }
+        return await persistence.exportToFile(email, thresholds: [.emg: emgThreshold, .movement: movementThreshold, .muscleActivityMagnitude: muscleActivityThreshold])
     }
     
     func addEvent(_ event: Event) {
@@ -161,7 +261,7 @@ private actor PersistenceWorker {
         muscleActivityMagnitude.append(dataPoint.convert())
         
         recalibrateMuscleActivityWith(dataPoint)
-    
+        
         Task {
             await persistenceWorker.writePPGDataPoint(dataPoint)
         }
@@ -184,7 +284,7 @@ private actor PersistenceWorker {
         movement.append(dataPoint.convert())
         
         recalibrateMovementWith(dataPoint)
-
+        
         Task {
             await persistenceWorker.writeAccelerometerDataPoint(dataPoint)
         }
@@ -217,7 +317,7 @@ private actor PersistenceWorker {
         emg.append(dataPoint)
         
         recalibrateEMGWith(dataPoint)
-
+        
         Task {
             await persistenceWorker.writeEMGDataPoint(EMGDataPoint(value: dataPoint.value, timestamp: dataPoint.date))
         }

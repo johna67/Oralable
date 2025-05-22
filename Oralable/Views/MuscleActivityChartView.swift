@@ -7,7 +7,7 @@ import Charts
 import SwiftUI
 
 struct MuscleActivityChartView: View {
-    @Environment(MeasurementStore.self) var measurements: MeasurementStore
+    var measurements: MeasurementStoreProtocol
     @State private var selectedRange: ChartRange = .hour
     @State private var startTimeInterval = TimeInterval()
     
@@ -25,6 +25,8 @@ struct MuscleActivityChartView: View {
     
     @State private var scale: CGFloat = 1.0
     @State private var lastScale: CGFloat = 1.0
+    
+    @State private var isLoaded = false
     
     let measurementType: MeasurementType
     
@@ -61,24 +63,26 @@ struct MuscleActivityChartView: View {
             .onChange(of: selectedRange) {
                 selectedDate = nil
             }
-            chart
+            if isLoaded {
+                chart
+            } else {
+                Spacer()
+                ProgressView("Loading data…")
+                Spacer()
+            }
         }
         .background(Color.background)
         .onAppear {
             UISegmentedControl.appearance().selectedSegmentTintColor = .background
             UISegmentedControl.appearance().backgroundColor = .surface
             
-            let hourlyTouple = aggregateWithWeightedMedian(data, interval: 5)
-            hourlyData = hourlyTouple.0
-            hourlyThreshold = hourlyTouple.1
+            isLoaded = measurements.dataLoaded
+            loadSegmentedData()
             
-            let dailyTouple = aggregateWithWeightedMedian(data, interval: 24 * 5)
-            dailyData = dailyTouple.0
-            dailyThreshold = dailyTouple.1
-            
-            let weeklyTouple = aggregateWithWeightedMedian(data, interval: 7 * 24 * 5)
-            weeklyData = weeklyTouple.0
-            weeklyThreshold = weeklyTouple.1
+            measurements.dataLoadedCallback = {
+                loadSegmentedData()
+                isLoaded = true
+            }
         }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
@@ -106,6 +110,20 @@ struct MuscleActivityChartView: View {
             }
             Button("Cancel", role: .cancel) { }
         }
+    }
+    
+    func loadSegmentedData() {
+        let hourlyTouple = aggregateWithWeightedMedian(data, interval: 5)
+        hourlyData = hourlyTouple.0
+        hourlyThreshold = hourlyTouple.1
+        
+        let dailyTouple = aggregateWithWeightedMedian(data, interval: 24 * 5)
+        dailyData = dailyTouple.0
+        dailyThreshold = dailyTouple.1
+        
+        let weeklyTouple = aggregateWithWeightedMedian(data, interval: 7 * 24 * 5)
+        weeklyData = weeklyTouple.0
+        weeklyThreshold = weeklyTouple.1
     }
     
     private var chart: some View {
@@ -146,7 +164,6 @@ struct MuscleActivityChartView: View {
                 .padding(.top, 30)
                 .padding(.horizontal, 30)
         }
-        //.chartXSelection(value: $selectedDate)
         .chartGesture { chartProxy in
             SpatialTapGesture().onEnded { value in
                 selectedDate = chartProxy.value(atX: value.location.x, as: Date.self)
@@ -163,13 +180,10 @@ struct MuscleActivityChartView: View {
                 })
         }
         .chartScrollableAxes(.horizontal)
-        //.chartScrollTargetBehavior(targetBehavior)
         .chartScrollPosition(initialX: scrollPosition)
         .chartYAxis(.hidden)
         .chartYScale(domain: yDomain)
         .chartXVisibleDomain(length: visibleDomainLength)
-        //.chartXScale(domain: currentRangeInterval.start...currentRangeInterval.end, range: .plotDimension(padding: 20))
-        
         .chartXAxis {
             switch selectedRange {
             case .hour:
@@ -407,12 +421,5 @@ extension MuscleActivityChartView {
         }
 
         return filled
-    }
-}
-
-#Preview {
-    NavigationStack {
-        MuscleActivityChartView(measurementType: .muscleActivityMagnitude)
-            .environment(MeasurementStore())
     }
 }

@@ -7,10 +7,13 @@ import Foundation
 import LogKit
 import SwiftData
 
-private struct ExportData: Codable {
+struct ExportData: Codable {
     let ppg: [PPGDataPoint]
     let accelerometer: [AccelerometerDataPoint]
-    let events: [EventModel]
+    let emg: [EMGDataPoint]
+    let events: [Event]
+    let user: User
+    let thresholds: [MeasurementType: Double?]
 }
 
 protocol PersistenceService {
@@ -24,7 +27,9 @@ protocol PersistenceService {
     func writeUser(_ user: User)
     func writeEvent(_ event: Event)
     func readEvents(limit: Int?) -> [Event]
-    func exportAllToJson() throws -> Data
+    
+    @MainActor
+    func exportToFile(_ email: String, thresholds: [MeasurementType: Double?]) async -> URL?
 }
 
 @Model
@@ -161,7 +166,7 @@ final class AccelerometerDataPoint: Codable {
 }
 
 @Model
-final class UserModel {
+final class UserModel: Codable {
     @Attribute var firstName: String
     @Attribute var lastName: String
     @Attribute var email: String
@@ -170,6 +175,24 @@ final class UserModel {
         self.firstName = firstName
         self.lastName = lastName
         self.email = email
+    }
+    
+    enum CodingKeys: String, CodingKey {
+        case firstName, lastName, email
+    }
+    
+    required init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        firstName = try container.decode(String.self, forKey: .firstName)
+        lastName = try container.decode(String.self, forKey: .lastName)
+        email = try container.decode(String.self, forKey: .email)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(firstName, forKey: .firstName)
+        try container.encode(lastName, forKey: .lastName)
+        try container.encode(email, forKey: .email)
     }
 }
 
@@ -254,16 +277,43 @@ final class SwiftDataPersistence: PersistenceService {
         write(EventModel(timestamp: event.date, type: event.type))
     }
     
-    func exportAllToJson() throws -> Data {
-        let ppg = readAll(PPGDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
-        let accelerometer = readAll(AccelerometerDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
-        let events = readAll(EventModel.self)
+    func exportToFile(_ email: String, thresholds: [MeasurementType: Double?]) async -> URL? {
+        return await withCheckedContinuation { continuation in
+            DispatchQueue.global().async {
+                do {
+                    let jsonData = try self.exportAllToJson(thresholds: thresholds)
+                    let tempDir = FileManager.default.temporaryDirectory
+                    let fileURL = tempDir.appendingPathComponent("\(email)_Oralable.json")
+                    
+                    if let jsonData = jsonData {
+                        try jsonData.write(to: fileURL)
+                        continuation.resume(returning: fileURL)
+                    } else {
+                        continuation.resume(returning: nil)
+                    }
+                } catch {
+                    continuation.resume(returning: nil)
+                }
+            }
+        }
+    }
+    
+    private func exportAllToJson(thresholds: [MeasurementType: Double?]) throws -> Data? {
+        if let user = readUser() {
+            let ppg = readAll(PPGDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
+            let accelerometer = readAll(AccelerometerDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
+            let emg = readAll(EMGDataPoint.self, sortBy: SortDescriptor(\.timestamp, order: .forward))
+            
+            let events = readEvents(limit: nil)
+            
+            let exportData = ExportData(ppg: ppg, accelerometer: accelerometer, emg: emg, events: events, user: user, thresholds: thresholds)
+            
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            return try encoder.encode(exportData)
+        }
         
-        let exportData = ExportData(ppg: ppg, accelerometer: accelerometer, events: events)
-        
-        let encoder = JSONEncoder()
-        encoder.dateEncodingStrategy = .iso8601
-        return try encoder.encode(exportData)
+        return nil
     }
     
     private func read<T: PersistentModel>(_ type: T.Type) -> T? {
