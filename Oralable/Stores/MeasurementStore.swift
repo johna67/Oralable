@@ -26,10 +26,6 @@ private actor PersistenceReader {
     func readEMG() -> [EMGDataPoint] {
         persistence.readEMGDataPoints(limit: nil)
     }
-    
-    func readUserEmail() -> String? {
-        persistence.readUser()?.email
-    }
 }
 
 private actor PersistenceWorker {
@@ -168,8 +164,6 @@ protocol MeasurementStoreProtocol: AnyObject {
         }
     }
     
-    var userEmail: String?
-    
     private var cancellables = Set<AnyCancellable>()
     private var ppgTask: Task<Void, Never>?
     private var emgTask: Task<Void, Never>?
@@ -220,16 +214,14 @@ protocol MeasurementStoreProtocol: AnyObject {
         async let accPoints = reader.readAccelerometer()
         async let evtArray = reader.readEvents()
         async let emgPoints = reader.readEMG()
-        async let readEmail = reader.readUserEmail()
         
-        let (ppg, acc, evts, emgStore, email) = await (ppgPoints, accPoints, evtArray, emgPoints, readEmail)
+        let (ppg, acc, evts, emgStore) = await (ppgPoints, accPoints, evtArray, emgPoints)
         
         await MainActor.run {
             self.muscleActivityMagnitude.insert(contentsOf: ppg.map { $0.convert() }, at: 0)
             self.movement.insert(contentsOf: acc.map { $0.convert() }, at: 0)
             self.events = Dictionary( uniqueKeysWithValues: evts.map { ($0.date, $0) })
             self.emg.insert(contentsOf: emgStore.map { $0.convert() }, at: 0)
-            self.userEmail = email ?? UUID().uuidString
             
             if temperature ?? 0 >= temperatureThreshold {
                 status = .active
@@ -244,8 +236,7 @@ protocol MeasurementStoreProtocol: AnyObject {
         }
     }
     
-    func exportToFile() async -> URL? {
-        guard let email = userEmail else { return nil }
+    func exportToFile(email: String) async -> URL? {
         return await persistence.exportToFile(email, thresholds: [.emg: emgThreshold, .movement: movementThreshold, .muscleActivityMagnitude: muscleActivityThreshold])
     }
     

@@ -23,7 +23,7 @@ struct HomeView: View {
                             .textStyle(.iconLarge(.accent))
                     }
                     .padding(.trailing)
-                    .popover(isPresented: $moreShown) {
+                    .fullScreenCover(isPresented: $moreShown) {
                         MoreView()
                     }
                     Spacer()

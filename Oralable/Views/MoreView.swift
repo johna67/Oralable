@@ -14,6 +14,7 @@ struct MoreView: View {
     @State private var navigationPath = NavigationPath()
     
     @Environment(MeasurementStore.self) var measurements: MeasurementStore
+    @Environment(UserStore.self) var userStore: UserStore
     @Environment(\.dismiss) var dismiss
     
     var body: some View {
@@ -80,7 +81,7 @@ struct MoreView: View {
                         Button {
                             isLoading = true
                             Task {
-                                if let url = await measurements.exportToFile() {
+                                if let url = await measurements.exportToFile(email: userStore.user?.email ?? UUID().uuidString) {
                                     shareItem = ActivityItem(items: url)
                                 }
                                 isLoading = false
