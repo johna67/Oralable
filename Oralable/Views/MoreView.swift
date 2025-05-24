@@ -81,7 +81,7 @@ struct MoreView: View {
                         Button {
                             isLoading = true
                             Task {
-                                if let url = await measurements.exportToFile(email: userStore.user?.email ?? UUID().uuidString) {
+                                if let url = await measurements.exportToFile(email: userStore.getUniqueUserName()) {
                                     shareItem = ActivityItem(items: url)
                                 }
                                 isLoading = false

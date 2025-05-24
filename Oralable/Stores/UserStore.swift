@@ -46,6 +46,19 @@ import Combine
         user?.age = age
     }
     
+    func getUniqueUserName() -> String {
+        if let email = user?.email, email.count != 0 {
+            return email
+        }
+        if let uuid = UserDefaults.standard.string(forKey: "uniqueUserName") {
+            return uuid
+        } else {
+            let uuid = UUID().uuidString
+            UserDefaults.standard.setValue(uuid, forKey: "uniqueUserName")
+            return uuid
+        }
+    }
+    
     init() {
         user = db.readUser()
         Task {
